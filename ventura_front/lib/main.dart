@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ventura_front/screens/home/view.dart';
+import 'package:ventura_front/screens/loading/view.dart';
 
 void main() {
   runApp(const MainApp());
@@ -11,7 +11,8 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: HomeView(),
+      home: LoadingView(),
     );
   }
 }
+
