@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/map/view.dart';
+import 'package:ventura_front/screens/profile/view.dart';
 
 class MyButton extends StatelessWidget {
   final IconData iconData;
@@ -36,7 +37,10 @@ class MyButton extends StatelessWidget {
           print("Settings");
         }
         else if (title == "Profile"){
-          print("Profile");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileView())
+          );
         }
 
 
