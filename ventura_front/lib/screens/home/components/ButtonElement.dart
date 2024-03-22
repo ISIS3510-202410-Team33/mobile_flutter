@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/map/view.dart';
 import 'package:ventura_front/screens/profile/view.dart';
+import 'package:ventura_front/screens/settings/view.dart';
 
 class MyButton extends StatelessWidget {
   final IconData iconData;
@@ -14,56 +15,49 @@ class MyButton extends StatelessWidget {
     required this.color,
     required this.title,
     required this.description,
-  
   });
 
-
   @override
-  Widget build (BuildContext context) {
-    
+  Widget build(BuildContext context) {
     return InkWell(
-      onTap: (){
-        if (title == "Map"){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const MapView())
-          );
-        }
-
-        else if (title == "Schedule"){
-          print("Schedule");
-        }
-        else if (title == "Settings"){
-          print("Settings");
-        }
-        else if (title == "Profile"){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfileView())
-          );
-        }
-
-
-      },
-      
-      child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF262E32),
-                    borderRadius: BorderRadius.circular(60)
-                  ),
-                  padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
-                  child: Row(children: [
-                    Icon(iconData, color: color, size: 30),
-                    const SizedBox(width: 20,),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                        Text(description, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-                      ],
-                    ),
-                  ],)
-              )
-    );
+        onTap: () {
+          if (title == "Map") {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const MapView()));
+          } else if (title == "Schedule") {
+            print("Schedule");
+          } else if (title == "Settings") {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const SettingsView()));
+          } else if (title == "Profile") {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const ProfileView()));
+          }
+        },
+        child: Container(
+            decoration: BoxDecoration(
+                color: const Color(0xFF262E32),
+                borderRadius: BorderRadius.circular(60)),
+            padding:
+                const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
+            child: Row(
+              children: [
+                Icon(iconData, color: color, size: 30),
+                const SizedBox(
+                  width: 20,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 16)),
+                    Text(description,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 14)),
+                  ],
+                ),
+              ],
+            )));
   }
 }
