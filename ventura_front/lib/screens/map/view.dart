@@ -1,10 +1,13 @@
 import "package:flutter/material.dart";
-import "package:flutter/widgets.dart";
 
 import "../../services/models/location_model.dart";
 import "../../services/models/user_model.dart";
 
 import "../components/header_component.dart";
+
+import "../../mvvm_components/observer.dart";
+import "../../services/repositories/locations_repository.dart";
+import "../../services/view_models/locations_viewmodel.dart";
 
 
 class MapView extends StatefulWidget {
@@ -14,80 +17,43 @@ class MapView extends StatefulWidget {
   State createState() => MapViewState();
 }
 
-class MapViewState extends State{
+class MapViewState extends State implements EventObserver{
+
+  final LocationsViewModel _viewModel = LocationsViewModel(LocationRepository.getState());
+  bool _isLoading = false;
+  List<LocationModel> locations = [];
   
   final UserModel user = UserModel(
     uuid: 1, 
     name: "Juan",
     studentCode: 202011638);
 
-  final locations = [
-    LocationModel(
-      floors: 1, 
-      name: "Bloque A", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-    LocationModel(
-      floors: 1, 
-      name: "Bloque B", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-    LocationModel(
-      floors: 1, 
-      name: "Bloque C", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-    LocationModel(
-      floors: 1, 
-      name: "Bloque C", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-    LocationModel(
-      floors: 1, 
-      name: "Bloque C", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-
-    LocationModel(
-      floors: 1, 
-      name: "Bloque C", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-    LocationModel(
-      floors: 1, 
-      name: "Bloque C", 
-      greenAreas: 1,
-      latitude: 1.00000, 
-      longitude: 1.00000, 
-      obstructions: false, 
-      restaurants: 3),
-      
-      
-  ];
-
-
   @override
   void initState() {
 
     super.initState();
+    _viewModel.subscribe(this);
+    _viewModel.loadLocations();
+
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _viewModel.unsubscribe(this);
+  }
+
+  @override
+  void notify(ViewEvent event) {
+    if (event is LoadingEvent) {
+      setState(() {
+        _isLoading = event.isLoading;
+      });
+    } else if (event is LocationsLoadedEvent) {
+      setState(() {
+        locations = event.locations;
+      });
+    }
   }
 
   Widget getLocationsWidget(){
@@ -166,6 +132,7 @@ class MapViewState extends State{
 
                   Header(showUserInfo: false, user: user, showHomeIcon: true),
                   const SizedBox(height: 20),
+                  _isLoading ? const Center(child: CircularProgressIndicator()) :
                   Expanded(
                     child: SingleChildScrollView(
                       child: getLocationsWidget())
