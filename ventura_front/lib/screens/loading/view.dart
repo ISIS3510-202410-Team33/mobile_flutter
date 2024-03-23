@@ -1,25 +1,63 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '/screens/login/view.dart'; // Importa la pantalla siguiente
+import 'package:ventura_front/screens/home/view.dart';
+import 'package:ventura_front/screens/login/view.dart';
+
+import "../../mvvm_components/observer.dart";
+import "../../services/repositories/user_repository.dart";
+import "../../services/view_models/user_viewmodel.dart";
+
 
 class LoadingView extends StatefulWidget {
   const LoadingView({super.key});
 
   @override
-  State<LoadingView> createState() => LoadingViewState();
+  State<LoadingView> createState() => LoadingViewState ();
 }
 
-class LoadingViewState extends State<LoadingView> {
+class LoadingViewState extends State<LoadingView> implements EventObserver{
+
+  final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3), () {
+    _viewModel.subscribe(this);
+    _viewModel.getCredentials();
+
+  }
+
+   @override
+  void dispose() {
+    super.dispose();
+    _viewModel.unsubscribe(this);
+  }
+
+  @override
+  void notify(ViewEvent event) {  
+
+    if (event is LoadingEvent) {
+      setState(() {
+        _isLoading = event.isLoading;
+      });
+    } else if (event is SignInSuccessEvent) {
+
+      print("Success");
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => LoginView(), // Reemplaza LoginView() con la pantalla siguiente
+          builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
-    });
+    } else if (event is SignInFailedEvent) {
+      print("No Credentials");
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
+        ),
+      );
+    }
+
   }
 
   @override
@@ -29,8 +67,8 @@ Widget build(BuildContext context) {
     body: Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        SizedBox(height: 100),
-        Text(
+        const SizedBox(height: 100),
+        const Text(
           'VENTURA ©',
           style: TextStyle(
             fontSize: 40, 
@@ -38,17 +76,17 @@ Widget build(BuildContext context) {
             color: Colors.black, 
           ),
         ),
-        SizedBox(height: 16),
-        Stack(
+        const SizedBox(height: 16),
+        const Stack(
           alignment: Alignment.center,
           children: [
             LinearProgressIndicator(), 
           ],
         ),
-        SizedBox(height: 45),
+        const SizedBox(height: 45),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.only(right: 80), 
+            padding: const EdgeInsets.only(right: 80), 
             child: Image.asset(
               'lib/icons/goose_icon.png', 
               width: 700, 

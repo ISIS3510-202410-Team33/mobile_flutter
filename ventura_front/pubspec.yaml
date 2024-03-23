@@ -7,9 +7,12 @@ environment:
   sdk: '>=3.3.1 <4.0.0'
 
 dependencies:
+  firebase_auth: ^4.17.9
   firebase_storage: ^11.6.10
   flutter:
     sdk: flutter
+  geolocator: ^11.0.0
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:

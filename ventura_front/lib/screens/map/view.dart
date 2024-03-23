@@ -20,7 +20,7 @@ class MapView extends StatefulWidget {
 class MapViewState extends State implements EventObserver{
 
   final LocationsViewModel _viewModel = LocationsViewModel(LocationRepository.getState());
-  bool _isLoading = false;
+  bool _isLoading = true;
   List<LocationModel> locations = [];
   
   final UserModel user = UserModel(
@@ -81,6 +81,7 @@ class MapViewState extends State implements EventObserver{
           ],),
 
           Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -95,7 +96,22 @@ class MapViewState extends State implements EventObserver{
                   Text("Obstrucciones: ${location.obstructions ? "Sí" : "No"}", style: const TextStyle(color: Colors.white, fontSize: 14)),
                   Text("Pisos: ${location.floors}", style: const TextStyle(color: Colors.white, fontSize: 14))
                 ],
-              )
+              ),
+              const SizedBox(height: 10,),
+              Text("Latitud: ${location.latitude} ", style: const TextStyle(color: Colors.white, fontSize: 14)),
+              Text("Longitud: ${location.longitude}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text("Distancia: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  Text("${location.longitude}", style: const TextStyle(color: Colors.green, fontSize: 14))
+                ],),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text("Tiempo estimado \n caminando: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  Text("${location.longitude}", style: const TextStyle(color: Colors.green, fontSize: 14))
+              ],),
             ],
 
             

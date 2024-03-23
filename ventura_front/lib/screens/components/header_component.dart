@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/services/models/user_model.dart';
 
+import 'package:ventura_front/services/repositories/user_repository.dart';
+
 class Header extends StatelessWidget {
   final bool showUserInfo;
   final bool showHomeIcon;
   final UserModel user;
   const Header({super.key, required this.showUserInfo, required this.user, required this.showHomeIcon});
+
 
   String actualDate (){
     DateTime now = DateTime.now();

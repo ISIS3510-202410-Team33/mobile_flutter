@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/services/repositories/user_repository.dart';
 import '../components/header_component.dart';
 import './components/weather_component.dart';
 import './components/university_component.dart';
@@ -6,6 +7,7 @@ import './components/options_component.dart';
 
 import '../../services/models/user_model.dart';
 import '../../services/models/weather_model.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -17,10 +19,37 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> {
 
-  final UserModel user = UserModel(
-    uuid: 1, 
-    name: "Juan",
-    studentCode: 202011638);
+  Position? position;
+
+  Future<Position> determinePosition() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      await Geolocator.requestPermission();
+      if(permission == LocationPermission.deniedForever){
+        return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+      }
+    }
+    return await Geolocator.getCurrentPosition();
+  }
+
+  void getCurrentLocation() async {
+    try {
+      position = await determinePosition();
+      print(position!.latitude);
+      print(position!.longitude);
+
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  UserModel user = UserModel(
+    uuid: 0, 
+    name: "Default",
+    studentCode: 0);
+
+  final UserModel _user = UserRepository.getState().state;
+  
 
 
   final WeatherModel weather = WeatherModel(
@@ -33,8 +62,10 @@ class HomeViewState extends State<HomeView> {
   );
 
   @override
-  void initState() {
+  void initState()  {
     super.initState();
+    user = _user;
+    getCurrentLocation();
   }
   @override
   Widget build(BuildContext context) {
