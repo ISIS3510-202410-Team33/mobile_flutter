@@ -17,6 +17,7 @@ class LocationsViewModel extends EventViewModel {
     // 
     // 
   }
+  
 
   void loadLocations() {
     notify(LoadingEvent(isLoading: true));
