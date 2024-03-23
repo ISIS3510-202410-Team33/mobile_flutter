@@ -12,6 +12,12 @@ class LocationsViewModel extends EventViewModel {
   final LocationRepository _repository;
   LocationsViewModel(this._repository);
 
+  void registerLocationClick(LocationModel location) {
+    // 
+    // 
+    // 
+  }
+
   void loadLocations() {
     notify(LoadingEvent(isLoading: true));
     _repository.getLocations().then((value) {
