@@ -1,7 +1,12 @@
 import "package:flutter/material.dart";
+import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/widgets.dart";
 
 import "package:ventura_front/screens/home/view.dart";
+
+import "../../mvvm_components/observer.dart";
+import "../../services/repositories/user_repository.dart";
+import "../../services/view_models/user_viewmodel.dart";
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -10,10 +15,65 @@ class LoginView extends StatefulWidget {
   State createState() => LoginViewState();
 }
 
-class LoginViewState extends State<LoginView> {
+class LoginViewState extends State<LoginView> implements EventObserver{
+
+  final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
+  bool _isLoading = true;
+
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  
+  Future signIn() async {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: emailController.text,
+      password: passwordController.text
+    );
+  }
   @override
   void initState() {
     super.initState();
+    _viewModel.subscribe(this);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _viewModel.unsubscribe(this);
+  }
+
+  @override
+  void notify(ViewEvent event) {  
+
+    if (event is LoadingEvent) {
+      setState(() {
+        _isLoading = event.isLoading;
+      });
+    } else if (event is SignInSuccessEvent) {
+
+      print("Success");
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
+        ),
+      );
+    } else if (event is SignInFailedEvent) {
+      print("Failed");
+      showDialog<String>(
+
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text("Sign In Failed"),
+          content: const Text("Please check your email and password"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, "Ok"),
+              child: const Text("Ok"),
+            )
+          ],
+        ),
+      );
+    }
+
   }
 
   @override
@@ -67,7 +127,7 @@ class LoginViewState extends State<LoginView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'college',
                     style: TextStyle(
                       color: Colors.white,
@@ -75,7 +135,7 @@ class LoginViewState extends State<LoginView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'credentials',
                     style: TextStyle(
                       color: Colors.white,
@@ -92,10 +152,11 @@ class LoginViewState extends State<LoginView> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     TextField(
+                      controller: emailController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
-                        hintText: 'Username',
+                        hintText: 'Email',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -103,6 +164,7 @@ class LoginViewState extends State<LoginView> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -117,24 +179,26 @@ class LoginViewState extends State<LoginView> {
                     Align(
                       alignment: Alignment.center,
                       child: Container(
-                        width: MediaQuery.of(context).size.width * 0.2,
+                        width: MediaQuery.of(context).size.width * 0.4,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const HomeView()));
+                            final email = emailController.text.trim();
+                            final password = passwordController.text.trim();
+                            _viewModel.signIn(email, password);
+                            
                           },
-                          child: Text('Go!',
-                              style: TextStyle(
-                                color: Colors.white,
-                              )),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[700],
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
+                          child: const Text("Login",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              )
+                          )
                         ),
                       ),
                     ),
