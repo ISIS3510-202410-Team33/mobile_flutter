@@ -67,6 +67,7 @@ class HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    getCurrentLocation();
     user = _user;
   }
 
