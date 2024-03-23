@@ -62,11 +62,11 @@ class HomeViewState extends State<HomeView> {
 
   final UserModel _user = UserRepository.getState().state;
 
+  
 
   @override
   void initState() {
     super.initState();
-    getCurrentLocation();
     user = _user;
   }
 
