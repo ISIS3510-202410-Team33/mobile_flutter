@@ -11,7 +11,6 @@ import './components/options_component.dart';
 
 import '../../services/models/user_model.dart';
 import '../../services/models/weather_model.dart';
-import 'package:geolocator/geolocator.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -49,11 +48,12 @@ class HomeViewState extends State<HomeView> {
 
   final UserModel _user = UserRepository.getState().state;
 
+  
+
   @override
   void initState() {
     super.initState();
     user = _user;
-    getCurrentLocation();
   }
 
   @override

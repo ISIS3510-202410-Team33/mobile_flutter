@@ -8,7 +8,7 @@ base class SingletonBase<T> {
   @protected
   late T state;
 
-  T get currentText => state;
+  T get currentState => state;
 
   void setState(T newState) {
     state = newState;
