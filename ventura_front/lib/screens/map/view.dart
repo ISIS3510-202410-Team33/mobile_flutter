@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:geolocator/geolocator.dart";
 
 import "../../services/models/location_model.dart";
 import "../../services/models/user_model.dart";
@@ -9,6 +10,7 @@ import "../../mvvm_components/observer.dart";
 import "../../services/repositories/locations_repository.dart";
 import "../../services/view_models/locations_viewmodel.dart";
 
+import "../../services/repositories/gps_repository.dart";
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -19,6 +21,10 @@ class MapView extends StatefulWidget {
 
 class MapViewState extends State implements EventObserver{
 
+  Position? position;
+
+  GpsRepository gps = GpsRepository.getState();
+
   final LocationsViewModel _viewModel = LocationsViewModel(LocationRepository.getState());
   bool _isLoading = true;
   List<LocationModel> locations = [];
@@ -28,10 +34,20 @@ class MapViewState extends State implements EventObserver{
     name: "Juan",
     studentCode: 202011638);
 
+  void getPosition () async {
+    try {
+      position = await gps.determinePosition();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
   @override
   void initState() {
 
     super.initState();
+    getPosition();
     _viewModel.subscribe(this);
     _viewModel.loadLocations();
 
@@ -67,7 +83,9 @@ class MapViewState extends State implements EventObserver{
             children: [
               Text(location.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
               Row(children: [
-                TextButton(onPressed: (){}, child: Container(
+                TextButton(onPressed: (){
+                  gps.launchGoogleMaps(location.latitude, location.longitude);
+                }, child: Container(
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3D3B40),
@@ -103,14 +121,14 @@ class MapViewState extends State implements EventObserver{
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const Text("Distancia: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  Text("${location.longitude}", style: const TextStyle(color: Colors.green, fontSize: 14))
+                  const Text("Distancia: ", style: TextStyle(color: Colors.white, fontSize: 14)),
+                  Text("${gps.getDistanceLatLon(location.latitude, location.longitude).toStringAsFixed(2)} mts", style: const TextStyle(color: Colors.green, fontSize: 14))
                 ],),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text("Tiempo estimado \n caminando: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  Text("${location.longitude}", style: const TextStyle(color: Colors.green, fontSize: 14))
+                  Text("${(gps.getTimeLatLon(location.latitude, location.longitude) /60).toStringAsFixed(2)} minutes ", style: const TextStyle(color: Colors.green, fontSize: 14))
               ],),
             ],
 
