@@ -7,7 +7,6 @@ import './components/options_component.dart';
 
 import '../../services/models/user_model.dart';
 import '../../services/models/weather_model.dart';
-import 'package:geolocator/geolocator.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -19,29 +18,8 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> {
 
-  Position? position;
-
-  Future<Position> determinePosition() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      await Geolocator.requestPermission();
-      if(permission == LocationPermission.deniedForever){
-        return Future.error('Location permissions are permanently denied, we cannot request permissions.');
-      }
-    }
-    return await Geolocator.getCurrentPosition();
-  }
-
-  void getCurrentLocation() async {
-    try {
-      position = await determinePosition();
-      print(position!.latitude);
-      print(position!.longitude);
-
-    } catch (e) {
-      print(e);
-    }
-  }
+  double time = 0.0;
+  double distance = 0.0;
 
   UserModel user = UserModel(
     uuid: 0, 
@@ -61,11 +39,12 @@ class HomeViewState extends State<HomeView> {
     humidity: 0.65
   );
 
+  
+
   @override
   void initState()  {
     super.initState();
     user = _user;
-    getCurrentLocation();
   }
   @override
   Widget build(BuildContext context) {
