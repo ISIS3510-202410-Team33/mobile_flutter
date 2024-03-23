@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/services/models/user_model.dart';
 
-import 'package:ventura_front/services/repositories/user_repository.dart';
 
 class Header extends StatelessWidget {
   final bool showUserInfo;

@@ -1,8 +1,10 @@
+import 'dart:ffi';
+
 class WeatherModel {
   String description;
   String location;
   double temperature;
-  String feelsLike;
+  double feelsLike;
   double pressure;
   double humidity;
 
@@ -20,7 +22,7 @@ class WeatherModel {
       description: json['weather'][0]['description'],
       location: json['name'],
       temperature: (json['main']['temp'] - 273.15),
-      feelsLike: (json['main']['feels_like'] - 273.15).toString(),
+      feelsLike: (json['main']['feels_like'] - 273.15),
       pressure: json['main']['pressure'].toDouble(),
       humidity: json['main']['humidity'].toDouble(),
     );

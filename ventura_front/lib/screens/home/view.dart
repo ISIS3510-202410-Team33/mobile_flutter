@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:ventura_front/screens/home/components/weather_fetch.dart';
-import 'package:ventura_front/services/repositories/user_repository.dart';
 import 'package:ventura_front/services/repositories/user_repository.dart';
 import 'package:ventura_front/services/view_models/weather_viewmodel.dart';
 import '../components/header_component.dart';
@@ -11,10 +10,10 @@ import './components/options_component.dart';
 
 import '../../services/models/user_model.dart';
 import '../../services/models/weather_model.dart';
-import 'package:geolocator/geolocator.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
+
 
   @override
   State<HomeView> createState() => HomeViewState();
@@ -22,6 +21,17 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> {
   Position? position;
+
+  WeatherViewModel weatherViewModel = WeatherViewModel();
+
+  WeatherModel weatherData = WeatherModel(
+    description : "Default",
+    location : "Default",
+    temperature : 0,
+    feelsLike : 0.0,
+    pressure : 0,
+    humidity : 0
+  );
 
   Future<Position> determinePosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -38,22 +48,26 @@ class HomeViewState extends State<HomeView> {
   void getCurrentLocation() async {
     try {
       position = await determinePosition();
-      print(position!.latitude);
-      print(position!.longitude);
+      WeatherModel weatherModel =  await weatherViewModel.getWeather(position!.latitude, position!.longitude);
+      setState(() {
+        weatherData = weatherModel;
+      });
     } catch (e) {
       print(e);
     }
   }
 
+
   UserModel user = UserModel(uuid: 0, name: "Default", studentCode: 0);
 
   final UserModel _user = UserRepository.getState().state;
 
+
   @override
   void initState() {
     super.initState();
-    user = _user;
     getCurrentLocation();
+    user = _user;
   }
 
   @override
@@ -75,26 +89,7 @@ class HomeViewState extends State<HomeView> {
                   Header(showUserInfo: true, user: user, showHomeIcon: false),
                   const SizedBox(height: 20),
                   const SizedBox(height: 20),
-                  Consumer<WeatherViewModel>(
-                    builder: (context, viewModel, child) {
-                      return FutureBuilder<WeatherModel>(
-                        future: viewModel.getWeather(
-                            position!.latitude, position!.longitude),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(
-                                child: Text('Error: ${snapshot.error}'));
-                          } else {
-                            return Weather(weather: snapshot.data!);
-                          }
-                        },
-                      );
-                    },
-                  ),
+                  Weather(weather: weatherData,),
                   const SizedBox(height: 20),
                   const University(),
                   const SizedBox(height: 20),

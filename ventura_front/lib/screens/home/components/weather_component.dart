@@ -5,6 +5,10 @@ class Weather extends StatelessWidget {
   final WeatherModel weather;
   const Weather({super.key, required this.weather});
 
+  String firstLetterUppercase(String text) {
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,18 +34,18 @@ class Weather extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(weather.description,
+                          Text(firstLetterUppercase(weather.description),
                               style:
-                                  TextStyle(color: Colors.white, fontSize: 16)),
+                                  const TextStyle(color: Colors.white, fontSize: 16)),
                           Text(weather.location,
                               style:
-                                  TextStyle(color: Colors.grey, fontSize: 14)),
+                                  const TextStyle(color: Colors.grey, fontSize: 14)),
                         ],
                       ),
                     ],
                   ),
-                  Text("${weather.temperature}°",
-                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                  Text("${(weather.temperature).toStringAsFixed(2)}°",
+                      style: const TextStyle(color: Colors.white, fontSize: 20)),
                 ],
               ),
               const SizedBox(height: 30),
@@ -51,7 +55,7 @@ class Weather extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(weather.feelsLike,
+                      Text("${(weather.feelsLike).toStringAsFixed(2)}°",
                           style: const TextStyle(
                               color: Colors.white, fontSize: 14)),
                       const Text("Sensible",
@@ -61,7 +65,7 @@ class Weather extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(" ${weather.humidity * 100}%",
+                      Text(" ${(weather.humidity).round()}%",
                           style: TextStyle(color: Colors.white, fontSize: 14)),
                       const Text("Humidity",
                           style: TextStyle(color: Colors.grey, fontSize: 14)),
