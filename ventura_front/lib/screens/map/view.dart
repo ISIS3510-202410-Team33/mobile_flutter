@@ -34,6 +34,11 @@ class MapViewState extends State implements EventObserver{
     name: "Juan",
     studentCode: 202011638);
 
+  int ubicarButtonClicks = 0;
+  void updateUbicarButtonClicks(LocationModel newValue) {
+    _viewModel.updateUbicarButtonClicks(newValue);
+  }
+  
   void getPosition () async {
     try {
       position = await gps.determinePosition();
@@ -84,7 +89,9 @@ class MapViewState extends State implements EventObserver{
               Text(location.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
               Row(children: [
                 TextButton(onPressed: (){
-                  gps.launchGoogleMaps(location.latitude, location.longitude);
+                  gps.launchGoogleMaps(location.latitude, location.longitude);  setState(() {
+                        ubicarButtonClicks++;
+                      });
                 }, child: Container(
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
                   decoration: BoxDecoration(
