@@ -3,20 +3,20 @@ import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
-import "package:ventura_front/screens/signUp/view.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../mvvm_components/observer.dart";
 import "../../services/repositories/user_repository.dart";
-import "../../services/view_models/user_viewmodel.dart";
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+
+class  SignUpView extends StatefulWidget {
+  const SignUpView({super.key});
 
   @override
-  State createState() => LoginViewState();
+  State createState() => SignUpViewState();
 }
 
-class LoginViewState extends State<LoginView> implements EventObserver{
+class SignUpViewState extends State<SignUpView> implements EventObserver{
 
   final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
   bool _isLoading = true;
@@ -24,8 +24,8 @@ class LoginViewState extends State<LoginView> implements EventObserver{
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   
-  Future signIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
+  Future signUp() async {
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: emailController.text,
       password: passwordController.text
     );
@@ -49,22 +49,27 @@ class LoginViewState extends State<LoginView> implements EventObserver{
       setState(() {
         _isLoading = event.isLoading;
       });
-    } else if (event is SignInSuccessEvent) {
+    } else if (event is SignUpSuccessEvent) {
 
       print("Success");
+      ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('User created successfully'),
+    ),
+  );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
-    } else if (event is SignInFailedEvent) {
+    } else if (event is SignUpFailedEvent) {
       print("Failed");
       showDialog<String>(
 
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text("Sign In Failed"),
-          content: const Text("Please check your email and password"),
+          title: const Text("Sign Up Failed"),
+          content: const Text("Please enter valid email and password"),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(context, "Ok"),
@@ -105,22 +110,14 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                 height: 40,
                 width: double.infinity,
               ),
-              GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignUpView()),
-                );
-              },
-              child: Text(
-                'First time using Ventura? Sign up here',
+              Text(
+                'Create your account and start immediately',
                 style: TextStyle(
                   color: Colors.grey[400],
                   fontSize: 18,
                   decoration: TextDecoration.underline, 
                 ),
               ),
-            ),
               const SizedBox(height: 36),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -198,7 +195,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                           onPressed: () {
                             final email = emailController.text.trim();
                             final password = passwordController.text.trim();
-                            _viewModel.signIn(email, password);
+                            _viewModel.signUp(email, password);
                             
                           },
                           style: ElevatedButton.styleFrom(
@@ -207,7 +204,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
-                          child: const Text("Login",
+                          child: const Text("SIGN UP",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,

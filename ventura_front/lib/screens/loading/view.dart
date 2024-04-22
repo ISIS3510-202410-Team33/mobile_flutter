@@ -23,10 +23,20 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
   @override
   void initState() {
     super.initState();
+
+    Timer(Duration(seconds: 6), () {
+      if (mounted) { // Verifica si el widget está montado antes de realizar la navegación
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const LoginView(), 
+          ),
+        );
+      }
+    });
     _viewModel.subscribe(this);
     _viewModel.getCredentials();
 
-  }
+    }
 
    @override
   void dispose() {
