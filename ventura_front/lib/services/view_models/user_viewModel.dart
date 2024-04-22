@@ -36,6 +36,19 @@ class UserViewModel extends EventViewModel {
     });
   }
 
+  void signUp(String username, String password) {
+    notify(LoadingEvent(isLoading: true));
+    _repository.signUp(username, password).then((value) {
+      print("UserViewModel: signUp: ${value}");
+      notify(SignUpSuccessEvent(user: value));
+      notify(LoadingEvent(isLoading: false));
+
+    }).catchError((error){
+      notify(SignUpFailedEvent());
+      notify(LoadingEvent(isLoading: false));
+    });
+  }
+
 }
 
 class LoadingEvent extends ViewEvent {
@@ -52,5 +65,16 @@ class SignInSuccessEvent extends ViewEvent {
 class SignInFailedEvent extends ViewEvent {
 
   SignInFailedEvent() : super("SignInFailedEvent");
+}
+
+class SignUpSuccessEvent extends ViewEvent {
+  final UserModel user;
+
+  SignUpSuccessEvent({required this.user}) : super("SignUpSuccessEvent");
+}
+
+class SignUpFailedEvent extends ViewEvent {
+
+  SignUpFailedEvent() : super("SignUpFailedEvent");
 }
 

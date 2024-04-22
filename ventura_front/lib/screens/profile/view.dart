@@ -1,7 +1,8 @@
 import "package:flutter/material.dart";
 import "package:flutter/widgets.dart";
+import "package:ventura_front/services/models/user_model.dart";
+import "package:ventura_front/services/repositories/user_repository.dart";
 
-import "../../services/models/profile_model.dart";
 import '../home/components/university_component.dart';
 import 'components/homeIcon_component.dart';
 
@@ -14,17 +15,15 @@ class ProfileView extends StatefulWidget {
 
 class ProfileViewState extends State<ProfileView> {
 
-  final ProfileModel user = ProfileModel(
-    uuid: 1, 
-    name: "Manuela Cruz",
-    edad: 27,
-    descripcion: "software engineering student 7th semester",
-    imageUrl: "lib/icons/user_icon.png");
+  UserModel user = UserModel(uuid: 0, name: "Default", studentCode: 0);
+
+  final UserModel _user = UserRepository.getState().state;
 
   @override
   void initState() {
 
     super.initState();
+    user = _user;
   }
 
   @override
@@ -59,12 +58,12 @@ class ProfileViewState extends State<ProfileView> {
                   ),
                   child: CircleAvatar(
                     radius: 70,
-                    backgroundImage: AssetImage(user.imageUrl),
+                    backgroundImage: AssetImage('lib/icons/perfil-de-usuario.png'),
                   ),
                 ),
                 SizedBox(height: 10), 
                 Text(
-                  '${user.name}, ${user.edad}',
+                  '${_user.name}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 25,
@@ -97,7 +96,7 @@ class ProfileViewState extends State<ProfileView> {
                     ),
                     SizedBox(height: 20),
                     Text(
-                      '${user.descripcion}',
+                      'Additional Information',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.black,

@@ -43,7 +43,30 @@ final class UserRepository extends SingletonBase<UserModel>{
 
   } 
 
+  Future<UserModel> signUp(String email, String password) async {
+    // Crear instancia si no existe
+      if (_instance == null) {
+        _instance = UserRepository.getState();
+        return _instance!.state;
+      }
+      // Si la lista de locations esta vacia, consultar a Firebase Storage
+      else if(_instance!.state.name == "Default"){ //
+      
+        print("Firebase Sign up");
+        try {
+          UserCredential userCred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+          _instance!.setState(UserModel(name: userCred.user!.email!.split("@")[0] , studentCode: 0, uuid: 0));
+            return _instance!.state;
+        } catch (e) {
+          return Future.error(e);
+        }
+      }
+      else {
+        print("Cache locations");
+        return _instance!.state;
+      }
 
+}
 
   Future<UserModel> getCredentials() async {
     if (_instance == null) {
