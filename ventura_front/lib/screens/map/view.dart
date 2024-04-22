@@ -11,6 +11,7 @@ import "../../services/repositories/locations_repository.dart";
 import "../../services/view_models/locations_viewmodel.dart";
 
 import "../../services/repositories/gps_repository.dart";
+import 'package:ventura_front/screens/map/components/rateIcon_component.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -86,7 +87,13 @@ class MapViewState extends State implements EventObserver{
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(location.name, style: const TextStyle(color: Colors.white, fontSize: 16)),
+              Expanded(
+              child: Text(
+                location.name,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                overflow: TextOverflow.visible, // Permite que el texto se desborde si es demasiado largo
+              ),
+            ),
               Row(children: [
                 TextButton(onPressed: (){
                   gps.launchGoogleMaps(location.latitude, location.longitude);  setState(() {
@@ -100,54 +107,80 @@ class MapViewState extends State implements EventObserver{
                   ),
                   child: const Text("Ubicar", style: TextStyle(color: Colors.white, fontSize: 15))
                 )),
-      
-              ],),
-             
-          ],),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Áreas verdes: ${location.greenAreas}", style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  Text("Restaurantes: ${location.restaurants}", style: const TextStyle(color: Colors.white, fontSize: 14))
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Obstrucciones: ${location.obstructions ? "Sí" : "No"}", style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  Text("Pisos: ${location.floors}", style: const TextStyle(color: Colors.white, fontSize: 14))
-                ],
-              ),
-              const SizedBox(height: 10,),
-              Text("Latitud: ${location.latitude} ", style: const TextStyle(color: Colors.white, fontSize: 14)),
-              Text("Longitud: ${location.longitude}", style: const TextStyle(color: Colors.white, fontSize: 14)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text("Distancia: ", style: TextStyle(color: Colors.white, fontSize: 14)),
-                  Text("${gps.getDistanceLatLon(location.latitude, location.longitude).toStringAsFixed(2)} mts", style: const TextStyle(color: Colors.green, fontSize: 14))
-                ],),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text("Tiempo estimado \n caminando: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  Text("${(gps.getTimeLatLon(location.latitude, location.longitude) /60).toStringAsFixed(2)} minutes ", style: const TextStyle(color: Colors.green, fontSize: 14))
-              ],),
             ],
-
-            
           ),
-          const SizedBox(height: 10,),
+          ExpansionTile(
+  title: Text(
+    'View more information',
+    style: TextStyle(
+      color: const Color.fromARGB(255, 211, 164, 219),
+      fontSize: 16, fontWeight: FontWeight.bold
+    ),
+  ),
+  children: <Widget>[
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Áreas verdes: ${location.greenAreas}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text("Restaurantes: ${location.restaurants}", style: const TextStyle(color: Colors.white, fontSize: 14))
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Obstrucciones: ${location.obstructions ? "Sí" : "No"}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text("Pisos: ${location.floors}", style: const TextStyle(color: Colors.white, fontSize: 14))
+          ],
+        ),
+        const SizedBox(height: 10,),
+        Text("Latitud: ${location.latitude} ", style: const TextStyle(color: Colors.white, fontSize: 14)),
+        Text("Longitud: ${location.longitude}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const Text("Distancia: ", style: TextStyle(color: Colors.white, fontSize: 14)),
+            Text("${gps.getDistanceLatLon(location.latitude, location.longitude).toStringAsFixed(2)} mts", style: const TextStyle(color: Colors.white, fontSize: 14))
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const Text("Tiempo estimado \ncaminando: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text("${(gps.getTimeLatLon(location.latitude, location.longitude) /60).toStringAsFixed(2)} minutes ", style: const TextStyle(color: Colors.white, fontSize: 14))
+          ],
+        ),
+      ],
+    ),
+  ],
+),
+SizedBox(width: 10),
+Align(
+  alignment: Alignment.centerLeft,
+  child:GestureDetector(
+  onTap: () {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return RateIcon();
+      },
+    );
+  },
+  child: Text(
+    'Rate this location!',
+    style: TextStyle(color: Color.fromARGB(255, 135, 230, 139), fontSize: 14, fontWeight: FontWeight.bold), 
+  ),
+),),
+
+          const SizedBox(height: 10,), 
           const Divider(color: const Color(0xFF3D3B40), thickness: 1, height: 1, indent: 0, endIndent: 0,),
           const SizedBox(height: 10,),
 
-        ],)
-      );
-    }
+        ],),);}
 
 
     return Column(
@@ -185,5 +218,8 @@ class MapViewState extends State implements EventObserver{
               )),
         ));
   }
+
 }
+  
+
 
