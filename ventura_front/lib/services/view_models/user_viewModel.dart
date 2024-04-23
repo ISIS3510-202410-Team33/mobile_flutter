@@ -49,6 +49,8 @@ class UserViewModel extends EventViewModel {
     });
   }
 
+
+
 }
 
 class LoadingEvent extends ViewEvent {
