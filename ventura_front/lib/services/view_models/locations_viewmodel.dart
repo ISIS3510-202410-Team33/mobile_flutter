@@ -1,14 +1,11 @@
 import 'dart:convert';
 
-import 'package:ventura_front/services/models/user_model.dart';
-
 import '../../mvvm_components/viewmodel.dart';
 import '../../mvvm_components/observer.dart';
 
 import '../repositories/locations_repository.dart';
 import '../models/location_model.dart';
-import 'package:ventura_front/services/repositories/user_repository.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import '../models/user_location_model.dart';
 
 
 class LocationsViewModel extends EventViewModel {
@@ -19,37 +16,59 @@ class LocationsViewModel extends EventViewModel {
   final LocationRepository _repository;
   LocationsViewModel(this._repository);
 
-  void updateUbicarButtonClicks(LocationModel location) {
-    Map<String, dynamic> jsonData = {
-      "location": {
-        "name": location.name,
-        "latitude": location.latitude,
-        "longitude": location.longitude
-      },
-      "clicks": location
-    };
-
-    String jsonString = json.encode(jsonData);
-    String fileName = "ubicar_clicks.json";
-
-    firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance.ref().child(fileName);
-
-    ref.putString(jsonString).then((firebase_storage.TaskSnapshot storageTask) {
-      print("Archivo JSON subido exitosamente a Firebase Storage.");
-    }).catchError((error) {
-      print("Error al subir el archivo JSON a Firebase Storage: $error");
+  void updateLocationFrequency(userId, locationId ) {
+    final defaultModel = UserLocationModel(id: -1, collegeLocation: -1, frequency: -1, user: -1 );
+    _repository.updateLocationFrequency(userId, locationId).then(
+      (value) => {
+        if (value.statusCode == 200) {
+          notify(LocationFrequencyUpdateEvent(success: true, model: defaultModel))
+        }
+        else {
+          notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel))
+        }
+      }
+    // ignore: invalid_return_type_for_catch_error
+    ).catchError((error) => {
+      notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel))
     });
   }
 
   void loadLocations() {
+    List<LocationModel> locations = [];
     notify(LoadingEvent(isLoading: true));
     _repository.getLocations().then((value) {
-      notify(LocationsLoadedEvent(locations: value));
+      print("Backend locations");
+      final decodejson = jsonDecode(value.body);
+      for (var key in decodejson) {
+        final location = LocationModel(
+          id: key['id'],
+          name: key['name'],
+          floors: key['floors'],
+          greenAreas: key['green_zones'],
+          restaurants: key['restaurants'],
+          obstructions: key['obstructions'],
+          latitude: key['latitude'],
+          longitude: key['longitude']
+          );
+        locations.add(location);
+        print(location);
+      }
       notify(LoadingEvent(isLoading: false));
-    });
+      notify(LocationsLoadedEvent(locations: locations, success: true));
+    // ignore: invalid_return_type_for_catch_error
+    }).catchError((error) => notifyErrorLoadingLocations(error));
+
   }
 
+  void notifyErrorLoadingLocations(error){
+    print(error);
+    notify(LoadingEvent(isLoading: false));
+    notify(LocationsLoadedEvent(locations: [], success: false));
+  }
+
+
 }
+
 
 class LoadingEvent extends ViewEvent {
   bool isLoading;
@@ -57,7 +76,13 @@ class LoadingEvent extends ViewEvent {
 }
 
 class LocationsLoadedEvent extends ViewEvent {
+  final bool success;
   final List<LocationModel> locations;
+  LocationsLoadedEvent({required this.locations, required this.success}) : super("LocationsLoadedEvent");
+}
 
-  LocationsLoadedEvent({required this.locations}) : super("LocationsLoadedEvent");
+class LocationFrequencyUpdateEvent extends ViewEvent {
+  bool success;
+  UserLocationModel model;
+  LocationFrequencyUpdateEvent({required this.success, required this.model}):super("LocationFrequencyUpdateEvent");
 }

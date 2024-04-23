@@ -34,11 +34,6 @@ class MapViewState extends State implements EventObserver{
     uuid: 1, 
     name: "Juan",
     studentCode: 202011638);
-
-  int ubicarButtonClicks = 0;
-  void updateUbicarButtonClicks(LocationModel newValue) {
-    _viewModel.updateUbicarButtonClicks(newValue);
-  }
   
   void getPosition () async {
     try {
@@ -96,9 +91,8 @@ class MapViewState extends State implements EventObserver{
             ),
               Row(children: [
                 TextButton(onPressed: (){
-                  gps.launchGoogleMaps(location.latitude, location.longitude);  setState(() {
-                        ubicarButtonClicks++;
-                      });
+                  gps.launchGoogleMaps(location.latitude, location.longitude);  
+                  _viewModel.updateLocationFrequency(1, 1);
                 }, child: Container(
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
                   decoration: BoxDecoration(
@@ -112,7 +106,7 @@ class MapViewState extends State implements EventObserver{
             ],
           ),
           ExpansionTile(
-  title: Text(
+  title: const Text(
     'View more information',
     style: TextStyle(
       color: const Color.fromARGB(255, 211, 164, 219),
@@ -158,7 +152,7 @@ class MapViewState extends State implements EventObserver{
     ),
   ],
 ),
-SizedBox(width: 10),
+const SizedBox(width: 10),
 Align(
   alignment: Alignment.centerLeft,
   child:GestureDetector(
@@ -166,11 +160,11 @@ Align(
     showDialog(
       context: context,
       builder: (context) {
-        return RateIcon();
+        return const RateIcon();
       },
     );
   },
-  child: Text(
+  child: const Text(
     'Rate this location!',
     style: TextStyle(color: Color.fromARGB(255, 135, 230, 139), fontSize: 14, fontWeight: FontWeight.bold), 
   ),

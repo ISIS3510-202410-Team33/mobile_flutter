@@ -23,13 +23,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  
-  Future signUp() async {
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: emailController.text,
-      password: passwordController.text
-    );
-  }
+ 
   @override
   void initState() {
     super.initState();

@@ -1,4 +1,5 @@
 class LocationModel {
+  int id;
   String name;
   int floors;
   int restaurants;
@@ -8,6 +9,7 @@ class LocationModel {
   bool obstructions;
 
   LocationModel({
+    required this.id,
     required this.name,
     required this.floors,
     required this.restaurants,
