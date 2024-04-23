@@ -9,16 +9,44 @@ class Weather extends StatelessWidget {
     return text[0].toUpperCase() + text.substring(1);
   }
 
+  LinearGradient getBackgroundGradient() {
+    if (weather.description.contains('rain')) {
+      return const LinearGradient(
+        colors: [Color(0x1BFFFFFF), Color(0x4D90CAF9)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      );
+    } else if (weather.description.contains('cloud')) {
+      return const LinearGradient(
+        colors: [Color(0x1BFFFFFF), Color(0x1BFFFFFF)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      );
+    } else if (weather.description.contains('clear')) {
+      return const LinearGradient(
+        colors: [Color(0x1BFFFFFF), Color(0x4DFBB81C)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      );
+    } else {
+      return const LinearGradient(
+        colors: [Colors.white, Colors.white],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF2C2F36),
+        decoration: BoxDecoration(
+          gradient: getBackgroundGradient(),
           borderRadius: BorderRadius.all(Radius.circular(60)),
         ),
         child: Padding(
           padding:
-              const EdgeInsets.only(top: 30, bottom: 30, left: 20, right: 20),
+              const EdgeInsets.only(top: 30, bottom: 10, left: 20, right: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -27,7 +55,17 @@ class Weather extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.cloud, color: Colors.white, size: 30),
+                      if (weather.description.contains('rain'))
+                        Image.asset('lib/icons/rain.png', width: 30, height: 30)
+                      else if (weather.description.contains('cloud'))
+                        Image.asset('lib/icons/cloud.png',
+                            width: 30, height: 30)
+                      else if (weather.description.contains('clear'))
+                        Image.asset('lib/icons/clear.png',
+                            width: 30, height: 30)
+                      else
+                        Image.asset('lib/icons/cloud.png',
+                            width: 30, height: 30),
                       const SizedBox(
                         width: 20,
                       ),
@@ -35,17 +73,18 @@ class Weather extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(firstLetterUppercase(weather.description),
-                              style:
-                                  const TextStyle(color: Colors.white, fontSize: 16)),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 16)),
                           Text(weather.location,
-                              style:
-                                  const TextStyle(color: Colors.grey, fontSize: 14)),
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 14)),
                         ],
                       ),
                     ],
                   ),
                   Text("${(weather.temperature).toStringAsFixed(2)}°",
-                      style: const TextStyle(color: Colors.white, fontSize: 20)),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 20)),
                 ],
               ),
               const SizedBox(height: 30),
@@ -79,9 +118,22 @@ class Weather extends StatelessWidget {
                       const Text("Pressure",
                           style: TextStyle(color: Colors.grey, fontSize: 14)),
                     ],
-                  )
+                  ),
                 ],
-              )
+              ),
+              const SizedBox(height: 10),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                if (weather.description.contains("rain") ||
+                    weather.description.contains("drizzle"))
+                  const Text("Watch out! It's raining heavily.",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold))
+                else
+                  const Text("Weather seems fine today!",
+                      style: TextStyle(color: Colors.white, fontSize: 18))
+              ])
             ],
           ),
         ));
