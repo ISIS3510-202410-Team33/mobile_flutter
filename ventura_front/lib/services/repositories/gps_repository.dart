@@ -50,9 +50,19 @@ final class GpsRepository extends SingletonBase<Position>{
     return Geolocator.distanceBetween(state.latitude, state.longitude, latitude, longitude);
   }
 
-  // Returns time in seconds - Default speed is 5 km/h - 1.38889 m/s
-  double getTimeLatLon(double latitude, double longitude) {
-    return Geolocator.distanceBetween(state.latitude, state.longitude, latitude,longitude) / 1.38889;
+  // Returns time in seconds - Default speed is 5 km/h - 1.38889 m/s 
+  // Type 0 = Walking, 1 = Cycling, 2 = Driving
+  double getTimeLatLon(double latitude, double longitude, int type) {
+    double walkingSpeed = 5; 
+    double cyclingSpeed = 3;
+    double drivingSpeed = 2;
+    if (type == 0) {
+      return Geolocator.distanceBetween(state.latitude, state.longitude, latitude,longitude) / walkingSpeed;
+    } else if (type == 1) {
+      return Geolocator.distanceBetween(state.latitude, state.longitude, latitude,longitude) / cyclingSpeed;
+    } else {
+      return Geolocator.distanceBetween(state.latitude, state.longitude, latitude,longitude) / drivingSpeed;
+    }
   }
 
   void launchGoogleMaps(double destinationLatitude, double destinationLongitude) async {

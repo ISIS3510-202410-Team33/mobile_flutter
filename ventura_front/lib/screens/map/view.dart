@@ -73,6 +73,24 @@ class MapViewState extends State implements EventObserver{
     }
   }
 
+  String setDistance(double distance) {
+    if (distance < 1000) {
+      return "${distance.toStringAsFixed(2)} mts";
+    } else {
+      return "${(distance / 1000).toStringAsFixed(2)} km";
+    }
+  } 
+
+  String setTime(double time){
+    if (time < 60) {
+      return "${time.toStringAsFixed(2)} seconds";
+    } else if (time < 3600) {
+      return "${(time / 60).toStringAsFixed(2)} minutes";
+    } else {
+      return "${(time / 3600).toStringAsFixed(2)} hours";
+    }
+  }
+
   Widget getLocationsWidget(){
     var widgets = <Widget>[];
     for (var location in locations){
@@ -99,7 +117,7 @@ class MapViewState extends State implements EventObserver{
                     color: const Color(0xFF3D3B40),
                     borderRadius: BorderRadius.circular(60)
                   ),
-                  child: const Text("Ubicar", style: TextStyle(color: Colors.white, fontSize: 15))
+                  child: const Text("Locate", style: TextStyle(color: Colors.white, fontSize: 15))
                 )),
                 ],
               ),
@@ -120,32 +138,32 @@ class MapViewState extends State implements EventObserver{
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Áreas verdes: ${location.greenAreas}", style: const TextStyle(color: Colors.white, fontSize: 14)),
-            Text("Restaurantes: ${location.restaurants}", style: const TextStyle(color: Colors.white, fontSize: 14))
+            Text("Green zones: ${location.greenAreas}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text("Restaurants: ${location.restaurants}", style: const TextStyle(color: Colors.white, fontSize: 14))
           ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Obstrucciones: ${location.obstructions ? "Sí" : "No"}", style: const TextStyle(color: Colors.white, fontSize: 14)),
-            Text("Pisos: ${location.floors}", style: const TextStyle(color: Colors.white, fontSize: 14))
+            Text("Obstructions: ${location.obstructions ? "Sí" : "No"}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text("Floors: ${location.floors}", style: const TextStyle(color: Colors.white, fontSize: 14))
           ],
         ),
         const SizedBox(height: 10,),
-        Text("Latitud: ${location.latitude} ", style: const TextStyle(color: Colors.white, fontSize: 14)),
-        Text("Longitud: ${location.longitude}", style: const TextStyle(color: Colors.white, fontSize: 14)),
+        Text("Latitude: ${location.latitude} ", style: const TextStyle(color: Colors.white, fontSize: 14)),
+        Text("Longitude: ${location.longitude}", style: const TextStyle(color: Colors.white, fontSize: 14)),
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Text("Distancia: ", style: TextStyle(color: Colors.white, fontSize: 14)),
-            Text("${gps.getDistanceLatLon(location.latitude, location.longitude).toStringAsFixed(2)} mts", style: const TextStyle(color: Colors.white, fontSize: 14))
+            const Text("Distance: ", style: TextStyle(color: Colors.white, fontSize: 14)),
+            Text(setDistance(gps.getDistanceLatLon(location.latitude, location.longitude)), style: const TextStyle(color: Colors.white, fontSize: 14))
           ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Text("Tiempo estimado \ncaminando: ", style: const TextStyle(color: Colors.white, fontSize: 14)),
-            Text("${(gps.getTimeLatLon(location.latitude, location.longitude) /60).toStringAsFixed(2)} minutes ", style: const TextStyle(color: Colors.white, fontSize: 14))
+            const Text("Estimated walking \ntime: ", style: TextStyle(color: Colors.white, fontSize: 14)),
+            Text(setTime(gps.getTimeLatLon(location.latitude, location.longitude, 0)), style: const TextStyle(color: Colors.white, fontSize: 14))
           ],
         ),
       ],

@@ -7,6 +7,8 @@ class LocationModel {
   double latitude;
   double longitude;
   bool obstructions;
+  int? frequency;
+  bool? bestRated;
 
   LocationModel({
     required this.id,
@@ -16,6 +18,8 @@ class LocationModel {
     required this.greenAreas,
     required this.latitude,
     required this.longitude,
-    required this.obstructions
+    required this.obstructions,
+    this.frequency,
+    this.bestRated
   }); 
 }
