@@ -36,6 +36,13 @@ class UserViewModel extends EventViewModel {
     });
   }
 
+  void signOut() {
+    notify(LoadingEvent(isLoading: true));
+    _repository.signOut();
+    notify(SignOutEvent(success: true));
+    notify(LoadingEvent(isLoading: false));
+  }
+
   void signUp(String username, String password) {
     notify(LoadingEvent(isLoading: true));
     _repository.signUp(username, password).then((value) {
@@ -78,5 +85,10 @@ class SignUpSuccessEvent extends ViewEvent {
 class SignUpFailedEvent extends ViewEvent {
 
   SignUpFailedEvent() : super("SignUpFailedEvent");
+}
+
+class SignOutEvent extends ViewEvent {
+  bool success;
+  SignOutEvent({required this.success}) : super("SignOutEvent");
 }
 

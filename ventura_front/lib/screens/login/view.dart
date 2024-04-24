@@ -83,7 +83,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
             end: Alignment.topLeft),
         image: DecorationImage(
             image: AssetImage('lib/icons/gooseLogin.png'),
-            fit: BoxFit.fitHeight,
+            fit: BoxFit.contain,
             alignment: Alignment.bottomLeft),
       ),
       child: Scaffold(

@@ -95,7 +95,6 @@ class HomeViewContentState extends State<HomeViewContent> {
                 showLogoutIcon: true,
               ),
               const SizedBox(height: 20),
-              const SizedBox(height: 20),
               Consumer<WeatherViewModel>(
                 builder: (context, weatherViewModel, _) {
                   final weatherData = weatherViewModel.weatherData;
