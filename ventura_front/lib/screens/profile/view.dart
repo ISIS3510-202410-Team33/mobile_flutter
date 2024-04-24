@@ -37,26 +37,26 @@ class ProfileViewState extends State<ProfileView> {
         padding: const EdgeInsets.only(left: 16.0),
         child: Image.asset('lib/icons/uniandes_icon.png'), 
       ),
-        actions: [
+        actions: const [
         Padding(
-          padding: const EdgeInsets.only(right: 14),
+          padding: EdgeInsets.only(right: 14),
           child: HomeIcon(), 
         )
         ]
     ), 
-      backgroundColor: Color(0xFFFDF21C),
+      backgroundColor: const Color(0xFFFDF21C),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.black, width: 2), 
                   ),
-                  child: CircleAvatar(
+                  child: const CircleAvatar(
                     radius: 70,
                     backgroundImage: AssetImage('lib/icons/perfil-de-usuario.png'),
                   ),

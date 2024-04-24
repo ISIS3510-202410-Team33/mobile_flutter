@@ -92,6 +92,7 @@ class HomeViewContentState extends State<HomeViewContent> {
                 showUserInfo: true,
                 user: user,
                 showHomeIcon: false,
+                showLogoutIcon: true,
               ),
               const SizedBox(height: 20),
               const SizedBox(height: 20),
