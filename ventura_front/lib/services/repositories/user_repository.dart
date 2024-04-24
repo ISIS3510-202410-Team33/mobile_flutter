@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ventura_front/services/models/user_model.dart';
 import '../singleton_base.dart';
 
+
 final class UserRepository extends SingletonBase<UserModel>{
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  UserModel activeUser = UserModel(name: "Default", studentCode: 0, uuid: 0);
   //Singleton Pattern
   static  UserRepository? _instance;
   UserRepository._internal() {
@@ -67,6 +67,10 @@ final class UserRepository extends SingletonBase<UserModel>{
       }
 
 }
+
+  Future<void> signOut() {
+    return _auth.signOut().then((value) => null);
+  }
 
   Future<UserModel> getCredentials() async {
     if (_instance == null) {

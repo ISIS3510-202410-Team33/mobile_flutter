@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/services/models/user_model.dart';
+import 'package:ventura_front/screens/home/components/signout_button.dart';
 
 
 class Header extends StatelessWidget {
   final bool showUserInfo;
   final bool showHomeIcon;
+  final bool showLogoutIcon;
   final UserModel user;
-  const Header({super.key, required this.showUserInfo, required this.user, required this.showHomeIcon});
+  const Header({super.key, required this.showUserInfo, required this.user, required this.showHomeIcon, required this.showLogoutIcon});
 
 
   String actualDate (){
@@ -24,11 +26,11 @@ class Header extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Text("Hey, ${user.name}!", style: TextStyle(color: Colors.white, fontSize: 16)), 
+            Text("Hey, ${user.name}!", style: const TextStyle(color: Colors.white, fontSize: 16)), 
             const SizedBox(width: 10),
           ],),
           const SizedBox(height: 2),
-          Text(actualDate(), style: TextStyle(color: Colors.grey, fontSize: 12)), 
+           Text(actualDate(), style: const TextStyle(color: Colors.grey, fontSize: 12)), 
         ],);
     }
     else{
@@ -64,6 +66,15 @@ class Header extends StatelessWidget {
       return Container();
     }
   }
+
+  Widget getLogoutIcon(){
+    if(showLogoutIcon){
+      return const SignOutComponent();
+    }
+    else{
+      return Container();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     
@@ -73,6 +84,7 @@ class Header extends StatelessWidget {
           children: [
           getUserWidget(),
           const Spacer(),
+          getLogoutIcon(),
           getHomeIcon(context),
       ],);}
 } 

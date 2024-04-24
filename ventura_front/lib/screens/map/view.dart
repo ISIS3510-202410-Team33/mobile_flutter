@@ -198,7 +198,7 @@ Align(
                 //header of the app
                 children: [
 
-                  Header(showUserInfo: false, user: user, showHomeIcon: true),
+                  Header(showUserInfo: false, user: user, showHomeIcon: true, showLogoutIcon: false,),
                   const SizedBox(height: 20),
                   _isLoading ? const Center(child: CircularProgressIndicator()) :
                   Expanded(

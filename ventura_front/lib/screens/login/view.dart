@@ -20,16 +20,9 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
   final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
   bool _isLoading = true;
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   
-  Future signIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: emailController.text,
-      password: passwordController.text
-    );
-  }
   @override
   void initState() {
     super.initState();
@@ -60,7 +53,6 @@ class LoginViewState extends State<LoginView> implements EventObserver{
     } else if (event is SignInFailedEvent) {
       print("Failed");
       showDialog<String>(
-
         context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text("Sign In Failed"),
@@ -91,7 +83,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
             end: Alignment.topLeft),
         image: DecorationImage(
             image: AssetImage('lib/icons/gooseLogin.png'),
-            fit: BoxFit.fitHeight,
+            fit: BoxFit.contain,
             alignment: Alignment.bottomLeft),
       ),
       child: Scaffold(
