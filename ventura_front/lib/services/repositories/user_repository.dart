@@ -69,6 +69,7 @@ final class UserRepository extends SingletonBase<UserModel>{
 }
 
   Future<void> signOut() {
+    _instance!.setState(UserModel(name: "Default", studentCode: 0, uuid: 0));
     return _auth.signOut().then((value) => null);
   }
 

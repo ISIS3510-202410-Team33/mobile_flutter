@@ -24,7 +24,9 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
   void initState() {
     super.initState();
 
-    Timer(Duration(seconds: 6), () {
+    Timer(Duration(seconds: 2), () {
+      _viewModel.subscribe(this);
+      _viewModel.getCredentials();
       if (mounted) { // Verifica si el widget está montado antes de realizar la navegación
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -33,8 +35,6 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
         );
       }
     });
-    _viewModel.subscribe(this);
-    _viewModel.getCredentials();
 
     }
 
@@ -75,17 +75,31 @@ Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: Colors.white, // Fondo blanco
     body: Column(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const SizedBox(height: 100),
-        const Text(
-          'VENTURA ©',
+        const SizedBox(height: 50),
+        const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          Text(
+          'VENTURA',
           style: TextStyle(
-            fontSize: 40, 
+            fontSize: 50, 
             fontFamily: 'Lato', 
             color: Colors.black, 
+            fontWeight: FontWeight.w200,
           ),
-        ),
+          ),Text(
+            '©',
+            style: TextStyle(
+              fontSize: 20, 
+              fontFamily: 'Lato', 
+              color: Colors.black, 
+              fontWeight: FontWeight.w200,
+            ),
+          ),
+        ],),
         const SizedBox(height: 16),
         const Stack(
           alignment: Alignment.center,
@@ -94,16 +108,18 @@ Widget build(BuildContext context) {
           ],
         ),
         const SizedBox(height: 45),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(right: 80), 
-            child: Image.asset(
-              'lib/icons/goose_icon.png', 
-              width: 700, 
-              height: 700, 
+        Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height*0.7,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            image: DecorationImage(
+              image: AssetImage('lib/icons/goose-complete.png'),
+              fit: BoxFit.fitHeight,
+              alignment: Alignment.bottomCenter,
             ),
-          ),
-        ),
+          ),)
       ],
     ),
   );
