@@ -77,144 +77,193 @@ class LoginViewState extends State<LoginView> implements EventObserver{
     ]);
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Color(0xFF16171B), Color(0xFF353A40)],
-            begin: Alignment.bottomRight,
-            end: Alignment.topLeft),
+        color: Colors.white,
         image: DecorationImage(
             image: AssetImage('lib/icons/gooseLogin.png'),
             fit: BoxFit.contain,
             alignment: Alignment.bottomLeft),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const SizedBox(
-                height: 40,
-                width: double.infinity,
-              ),
-              GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignUpView()),
-                );
-              },
-              child: Text(
-                'First time using Ventura? Sign up here',
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 18,
-                  decoration: TextDecoration.underline, 
-                ),
-              ),
-            ),
-              const SizedBox(height: 36),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        backgroundColor: Colors.white,
+        body: Column(children: [
+          Expanded(
+          child: SingleChildScrollView(
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  
                 children: [
-                  Text(
-                    'Join us',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'using your',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'college',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'credentials',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.65,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    TextField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: 'Email',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
+                  Column(children: [
+                    const SizedBox(
+                        height: 30,
+                        width: double.infinity,
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: 'Password',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.4,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final email = emailController.text.trim();
-                            final password = passwordController.text.trim();
-                            _viewModel.signIn(email, password);
-                            
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignUpView()),
+                        );
+                      },
+                      child: Text(
+                          'First time using Ventura? Sign up here',
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 18,
+                            decoration: TextDecoration.underline, 
                           ),
-                          child: const Text("Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              )
-                          )
                         ),
                       ),
+                  ],),
+                  
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    alignment: Alignment.centerLeft,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      image: DecorationImage(
+                        image: AssetImage('lib/icons/gooseLogin.png'),
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topLeft,
+                      ),
                     ),
-                  ],
-                ),
+                    child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        
+                        const SizedBox(
+                          width: double.infinity,
+                        ),
+                        
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children:  [
+                            Text(
+                              'Join us',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'using your',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'college',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'credentials',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 28),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.65,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              TextField(
+                                controller: emailController,
+                                textAlign: TextAlign.center,
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText: 'Email',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w400
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                    
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              TextField(
+                                controller: passwordController,
+                                obscureText: true,
+                                textAlign: TextAlign.center,
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText: 'Password',
+                  
+                                  hintStyle: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w400
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 40),
+                              Align(
+                                alignment: Alignment.center,
+                                child:  Container(
+                                  width: MediaQuery.of(context).size.width * 0.4,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      final email = emailController.text.trim();
+                                      final password = passwordController.text.trim();
+                                      _viewModel.signIn(email, password);
+                                      
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey[700],
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
+                                    child: const Text("Login",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        )
+                                    )
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ),
+                  
+                  
+                ],)
               ),
-            ],
-          ),
-        ),
-      ),
+              )
+        )
+
+        ],)
+      ) 
     );
   }
 }
