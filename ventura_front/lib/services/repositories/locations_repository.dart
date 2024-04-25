@@ -1,7 +1,7 @@
 import 'package:http/http.dart' ;
 import '../models/location_model.dart';
 import '../singleton_base.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final class LocationRepository extends SingletonBase<List<LocationModel>>{
 
@@ -24,14 +24,27 @@ final class LocationRepository extends SingletonBase<List<LocationModel>>{
       "user_id" : userId.toString(),
       "location_id": locationId.toString()
     } ;
-    final url = Uri.https(FlutterConfig.get('API_URL'), "/api/user_frequencies/", queryParameters);
-    final package = patch(url);
-    return package;
+    String? domain = dotenv.env['API_URL'];
+    if (domain != null) {
+      final url = Uri.https(domain, "/api/user_frequencies/", queryParameters);
+      final package = patch(url);
+      return package;
+    }
+    else{
+      return Future.error("Error en la conexión");
+    }
   }
 
   Future<Response> getLocations() async {
-    final url = Uri.http(FlutterConfig.get('API_URL'), "/api/college_locations/");
-    final httpPackageInfo = get(url);
-    return httpPackageInfo;
+
+    String? domain = dotenv.env['API_URL'];
+    if (domain != null) {
+      final url = Uri.https(domain, "/api/college_locations/");
+      final httpPackageInfo = get(url);
+      return httpPackageInfo;
+    }
+    else{
+      return Future.error("Error en la conexión");
+    }
   } 
 }
