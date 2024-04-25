@@ -1,6 +1,7 @@
 import 'package:http/http.dart' ;
 import '../models/location_model.dart';
 import '../singleton_base.dart';
+import 'package:flutter_config/flutter_config.dart';
 
 final class LocationRepository extends SingletonBase<List<LocationModel>>{
 
@@ -23,15 +24,14 @@ final class LocationRepository extends SingletonBase<List<LocationModel>>{
       "user_id" : userId.toString(),
       "location_id": locationId.toString()
     } ;
-    final url = Uri.http("10.0.2.2:8000", "/api/user_frequencies/", queryParameters);
+    final url = Uri.https(FlutterConfig.get('API_URL'), "/api/user_frequencies/", queryParameters);
     final package = patch(url);
     return package;
   }
 
   Future<Response> getLocations() async {
-    final url = Uri.http("10.0.2.2:8000", "/api/college_locations/");
+    final url = Uri.http(FlutterConfig.get('API_URL'), "/api/college_locations/");
     final httpPackageInfo = get(url);
     return httpPackageInfo;
-        
   } 
 }
