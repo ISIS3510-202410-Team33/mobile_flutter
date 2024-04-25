@@ -6,7 +6,11 @@ import 'package:flutter_config/flutter_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FlutterConfig.loadEnvVariables();
+  try {
+    await FlutterConfig.loadEnvVariables();
+  } catch (e) {
+    print('Error loading environment variables: $e');
+  }
   runApp(const MainApp());
 }
 
