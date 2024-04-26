@@ -10,12 +10,14 @@ dependencies:
   firebase_auth: ^4.17.9
   firebase_storage: ^11.6.10
   flutter:
-    sdk: flutter
+    sdk: flutter 
+  shared_preferences: ^2.0.6
   geolocator: ^11.0.0
   http: ^1.2.1
   provider: ^6.1.2
   map_launcher: ^3.2.0
   flutter_dotenv: ^5.1.0
+  simple_progress_indicators: ^0.2.0
 
 dev_dependencies:
   flutter_test:
