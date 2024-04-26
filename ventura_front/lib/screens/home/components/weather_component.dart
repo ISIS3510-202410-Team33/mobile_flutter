@@ -30,7 +30,7 @@ class Weather extends StatelessWidget {
       );
     } else {
       return const LinearGradient(
-        colors: [Colors.white, Colors.white],
+        colors: [Color(0x1BFFFFFF), Color(0x1BFFFFFF)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       );
