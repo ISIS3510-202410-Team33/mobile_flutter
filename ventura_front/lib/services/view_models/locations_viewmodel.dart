@@ -34,10 +34,12 @@ class LocationsViewModel extends EventViewModel {
   }
 
   void loadLocations() {
-    List<LocationModel> locations = [];
+
+    Map<String, LocationModel> locations = {};
+
     notify(LoadingEvent(isLoading: true));
-    _repository.getLocations().then((value) {
-      print("Backend locations");
+    _repository.getLocations()
+    .then((value) {
       final decodejson = jsonDecode(value.body);
       for (var key in decodejson) {
         final location = LocationModel(
@@ -50,20 +52,33 @@ class LocationsViewModel extends EventViewModel {
           latitude: key['latitude'],
           longitude: key['longitude']
           );
-        locations.add(location);
-        print(location);
+        locations.putIfAbsent(key['id'].toString(), () => location);
       }
-      notify(LoadingEvent(isLoading: false));
-      notify(LocationsLoadedEvent(locations: locations, success: true));
+      return _repository.getRecommendedLocationsFrequency(1);
+      
     // ignore: invalid_return_type_for_catch_error
-    }).catchError((error) => notifyErrorLoadingLocations(error));
+    }).then((value) {
+      final decodejson = jsonDecode(value.body);
+      for (var key in decodejson) {
+        final location = locations[key['id'].toString()];
+        if (location != null){
+          location.recommended = true;
+          locations.update(location.id.toString(), (value) => location);
+        }
+      }
+      notify(LocationsLoadedEvent(locations: locations, success: true));
+      notify(LoadingEvent(isLoading: false));
+    
+    })
+    .catchError((error){
+      notifyErrorLoadingLocations(error);
+    });
 
   }
 
   void notifyErrorLoadingLocations(error){
-    print(error);
     notify(LoadingEvent(isLoading: false));
-    notify(LocationsLoadedEvent(locations: [], success: false));
+    notify(LocationsLoadedEvent(locations: {} , success: false));
   }
 
 
@@ -77,7 +92,7 @@ class LoadingEvent extends ViewEvent {
 
 class LocationsLoadedEvent extends ViewEvent {
   final bool success;
-  final List<LocationModel> locations;
+  final Map<String, LocationModel> locations;
   LocationsLoadedEvent({required this.locations, required this.success}) : super("LocationsLoadedEvent");
 }
 
@@ -86,3 +101,10 @@ class LocationFrequencyUpdateEvent extends ViewEvent {
   UserLocationModel model;
   LocationFrequencyUpdateEvent({required this.success, required this.model}):super("LocationFrequencyUpdateEvent");
 }
+
+class LocationsUpdateRecommendendEvent extends ViewEvent {
+  final List<UserLocationModel> updatedLocations;
+  LocationsUpdateRecommendendEvent({required this.updatedLocations}):super("LocationsUpdateRecommendendEvent");
+}
+
+

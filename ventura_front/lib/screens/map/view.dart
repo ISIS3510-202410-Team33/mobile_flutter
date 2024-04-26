@@ -28,7 +28,7 @@ class MapViewState extends State implements EventObserver{
 
   final LocationsViewModel _viewModel = LocationsViewModel(LocationRepository.getState());
   bool _isLoading = true;
-  List<LocationModel> locations = [];
+  Map<String,LocationModel> locations = {};
   
   final UserModel user = UserModel(
     uuid: 1, 
@@ -90,16 +90,36 @@ class MapViewState extends State implements EventObserver{
       return "${(time / 3600).toStringAsFixed(2)} hours";
     }
   }
+  List<Widget> getRecommendedWidget(location){
+    List<Widget> widgets = [];
+    if (location.recommended ?? false) {
+      widgets.add(const Icon(Icons.recommend, color: Colors.white, size: 30));
+      widgets.add(const SizedBox(width: 10));
+      widgets.add(const Text("Recommended location", style: TextStyle(color: Colors.white, fontSize: 14)));
+      widgets.add(const Spacer());
+      return widgets;
+    }
+    else{
+      return [];
+    }
+  }
 
   Widget getLocationsWidget(){
     var widgets = <Widget>[];
-    for (var location in locations){
+    for (var location in locations.values){
       widgets.add(
         Column(
           children: [
+          Column( // Aqui se agregan las recomendaciones si hay 
+            children: [
+              Row(
+              children: getRecommendedWidget(location) ),
+            ],
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              
               Expanded(
               child: Text(
                 location.name,
