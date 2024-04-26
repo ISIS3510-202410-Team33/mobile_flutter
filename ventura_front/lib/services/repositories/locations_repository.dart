@@ -3,12 +3,12 @@ import '../models/location_model.dart';
 import '../singleton_base.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-final class LocationRepository extends SingletonBase<List<LocationModel>>{
+final class LocationRepository extends SingletonBase<Map<String,LocationModel>>{
 
   //Singleton Pattern
   static  LocationRepository? _instance;
   LocationRepository._internal() {
-    List<LocationModel> locationsInitial = [];
+    Map<String,LocationModel> locationsInitial = {};
     state = locationsInitial;
   }
   static LocationRepository getState() {
@@ -27,24 +27,37 @@ final class LocationRepository extends SingletonBase<List<LocationModel>>{
     String? domain = dotenv.env['API_URL'];
     if (domain != null) {
       final url = Uri.https(domain, "/api/user_frequencies/", queryParameters);
-      final package = patch(url);
-      return package;
+      return patch(url);
     }
     else{
       return Future.error("Error en la conexión");
     }
   }
 
-  Future<Response> getLocations() async {
+  Future<Response> getLocations()  {
 
     String? domain = dotenv.env['API_URL'];
     if (domain != null) {
       final url = Uri.https(domain, "/api/college_locations/");
-      final httpPackageInfo = get(url);
-      return httpPackageInfo;
+      return get(url);
     }
     else{
       return Future.error("Error en la conexión");
     }
-  } 
+  }
+
+  Future<Response> getRecommendedLocationsFrequency(userId) {
+    final Map<String, dynamic> queryParameters = {
+      "user_id" : userId.toString(),
+      "method": "recommended_most_visited"
+    } ;
+    String? domain = dotenv.env['API_URL'];
+    if (domain != null) {
+      final url = Uri.https(domain, "/api/user_frequencies/analysis/", queryParameters);
+      return get(url);
+    }
+    else{
+      return Future.error("Error en la conexión");
+    }
+  }
 }
