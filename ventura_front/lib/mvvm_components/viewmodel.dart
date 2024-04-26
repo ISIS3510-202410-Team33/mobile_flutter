@@ -5,8 +5,11 @@ abstract class EventViewModel {
 
   void subscribe(EventObserver o) {
     if (_observerList.contains(o)) return;
-
     _observerList.add(o);
+  }
+
+  void unsubscribeAll() {
+    _observerList.clear();
   }
 
   bool unsubscribe(EventObserver o) {

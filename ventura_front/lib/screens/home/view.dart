@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:ventura_front/mvvm_components/observer.dart';
 import 'package:ventura_front/services/repositories/user_repository.dart';
+import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/weather_viewmodel.dart';
 import '../components/header_component.dart';
 import './components/weather_component.dart';
@@ -28,9 +30,11 @@ class HomeViewContent extends StatefulWidget {
   State<HomeViewContent> createState() => HomeViewContentState();
 }
 
-class HomeViewContentState extends State<HomeViewContent> {
+class HomeViewContentState extends State<HomeViewContent> implements EventObserver{
   Position? position;
   late WeatherViewModel weatherViewModel;
+  static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
+
 
   Future<Position> determinePosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -63,6 +67,7 @@ class HomeViewContentState extends State<HomeViewContent> {
   void initState() {
     super.initState();
     getCurrentLocation();
+    _connectionViewModel.subscribe(this);
     user = _user;
   }
 
@@ -117,5 +122,17 @@ class HomeViewContentState extends State<HomeViewContent> {
         ),
       ),
     );
+  }
+  
+  @override
+  void notify(ViewEvent event) {
+    if (event is ConnectionEvent) {
+      if (event.connection){
+        print("Conexión establecida");
+      }
+      else {
+        print("Conexión perdida");
+      }
+    }
   }
 }
