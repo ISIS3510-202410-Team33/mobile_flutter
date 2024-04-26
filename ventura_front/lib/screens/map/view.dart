@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart";
-import "package:shared_preferences/shared_preferences.dart";
+import "package:provider/provider.dart";
+import "package:ventura_front/services/view_models/profile_viewmodel.dart";
 
 import "../../services/models/location_model.dart";
 import "../../services/models/user_model.dart";
@@ -14,20 +15,31 @@ import "../../services/view_models/locations_viewmodel.dart";
 import "../../services/repositories/gps_repository.dart";
 import 'package:ventura_front/screens/map/components/rateIcon_component.dart';
 
-class MapView extends StatefulWidget {
+class MapView extends StatelessWidget {
   const MapView({super.key});
 
   @override
-  State createState() => MapViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProfileViewModel(),
+      child: MapViewContent(),
+    );
+  }
 }
 
-class MapViewState extends State implements EventObserver {
+class MapViewContent extends StatefulWidget {
+  @override
+  State<MapViewContent> createState() => MapViewState();
+}
+
+class MapViewState extends State<MapViewContent> implements EventObserver {
   Position? position;
 
   GpsRepository gps = GpsRepository.getState();
 
   final LocationsViewModel _viewModel =
       LocationsViewModel(LocationRepository.getState());
+  late ProfileViewModel profileViewModel;
   bool _isLoading = true;
   Map<String, LocationModel> locations = {};
   int pasosHoy = 0;
@@ -43,20 +55,16 @@ class MapViewState extends State implements EventObserver {
     }
   }
 
-  void addCalorias(int n) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      caloriasHoy = (prefs.getInt('caloriasHoy') ?? 0) + n;
-      prefs.setInt('caloriasHoy', caloriasHoy);
-    });
+  void addCalorias(double distance) async {
+    profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
+    await profileViewModel.addCalorias(distance);
+    setState(() {});
   }
 
-  void addPasos(int n) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      pasosHoy = (prefs.getInt('pasosHoy') ?? 0) + n;
-      prefs.setInt('pasosHoy', pasosHoy);
-    });
+  void addPasos(double distance) async {
+    profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
+    await profileViewModel.addPasos(distance);
+    setState(() {});
   }
 
   @override
@@ -145,15 +153,13 @@ class MapViewState extends State implements EventObserver {
                   children: [
                     TextButton(
                         onPressed: () {
+                          addCalorias(gps.getDistanceLatLon(
+                              location.latitude, location.longitude));
+                          addPasos(gps.getDistanceLatLon(
+                              location.latitude, location.longitude));
                           gps.launchGoogleMaps(
                               location.latitude, location.longitude);
                           _viewModel.updateLocationFrequency(1, 1);
-                          addCalorias(gps.getDistanceLatLon(
-                                  location.latitude, location.longitude) *
-                              0.062 as int);
-                          addPasos(gps.getDistanceLatLon(
-                                  location.latitude, location.longitude) /
-                              1.3932 as int);
                         },
                         child: Container(
                             padding: const EdgeInsets.only(

@@ -1,67 +1,59 @@
 import "package:flutter/material.dart";
 import "package:flutter/widgets.dart";
-import "package:shared_preferences/shared_preferences.dart";
+import "package:provider/provider.dart";
 import "package:ventura_front/services/models/user_model.dart";
 import "package:ventura_front/services/repositories/user_repository.dart";
+import "package:ventura_front/services/view_models/profile_viewmodel.dart";
 
 import '../components/header_component.dart';
 import '../home/components/university_component.dart';
-import 'components/homeIcon_component.dart';
 import "components/progress_bar.dart";
 
-class ProfileView extends StatefulWidget {
+class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
   @override
-  State createState() => ProfileViewState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProfileViewModel(),
+      child: ProfileViewContent(),
+    );
+  }
 }
 
-class ProfileViewState extends State<ProfileView> {
+class ProfileViewContent extends StatefulWidget {
+  @override
+  State<ProfileViewContent> createState() => ProfileViewState();
+}
+
+class ProfileViewState extends State<ProfileViewContent> {
   UserModel user = UserModel(uuid: 0, name: "Default", studentCode: 0);
-  int pasos = 1000;
-  int calorias = 40;
-  int pasosHoy = 0;
-  int caloriasHoy = 0;
+
+  late ProfileViewModel profileViewModel;
 
   final UserModel _user = UserRepository.getState().state;
   @override
   void initState() {
     super.initState();
-    loadPasos();
-    loadCalorias();
+    loadDatos();
     user = _user;
   }
 
-  void loadPasos() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      pasos = prefs.getInt('pasos') ?? 0;
-      pasosHoy = prefs.getInt('pasosHoy') ?? 0;
-    });
+  void loadDatos() async {
+    profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
+    await profileViewModel.loadCalorias();
+    await profileViewModel.loadPasos();
+    setState(() {});
   }
 
   void setPasos(int n) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      pasos = n;
-      prefs.setInt('pasos', pasos);
-    });
-  }
-
-  void loadCalorias() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      calorias = prefs.getInt('calorias') ?? 0;
-      caloriasHoy = prefs.getInt('caloriasHoy') ?? 0;
-    });
+    await profileViewModel.setPasos(n);
+    setState(() {});
   }
 
   void setCalorias(int n) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      calorias = n;
-      prefs.setInt('calorias', calorias);
-    });
+    await profileViewModel.setCalorias(n);
+    setState(() {});
   }
 
   Widget editar(int id) {
@@ -69,10 +61,18 @@ class ProfileViewState extends State<ProfileView> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (id == 0)
-          Text("Today lost calories:    " + '$caloriasHoy' + '/' + '$calorias',
+          Text(
+              "Today lost calories:    " +
+                  '${profileViewModel.caloriasHoy}' +
+                  '/' +
+                  '${profileViewModel.calorias}',
               style: TextStyle(color: Colors.white, fontSize: 20))
         else if (id == 1)
-          Text("Today steps:    " + '$pasosHoy' + '/' + '$pasos',
+          Text(
+              "Today steps:    " +
+                  '${profileViewModel.pasosHoy}' +
+                  '/' +
+                  '${profileViewModel.pasos}',
               style: TextStyle(color: Colors.white, fontSize: 20)),
         IconButton(
           icon: Icon(Icons.edit),
@@ -221,11 +221,22 @@ class ProfileViewState extends State<ProfileView> {
                 SizedBox(height: 20),
                 editar(1), //pasos
                 SizedBox(height: 10),
-                ProgressBarY(valor: pasosHoy / pasos),
+                ProgressBarY(
+                    valor: profileViewModel.pasosHoy / profileViewModel.pasos),
                 SizedBox(height: 20),
                 editar(0), //calorias
                 SizedBox(height: 10),
-                ProgressBarY(valor: caloriasHoy / calorias),
+                ProgressBarY(
+                    valor: profileViewModel.caloriasHoy /
+                        profileViewModel.calorias),
+                SizedBox(height: 10),
+                Text(
+                    "This information is stored locally and will be deleted at 12:00am of each day.",
+                    softWrap: true,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    )),
               ],
             ),
           ),
