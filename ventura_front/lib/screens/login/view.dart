@@ -4,10 +4,10 @@ import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/signUp/view.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../mvvm_components/observer.dart";
 import "../../services/repositories/user_repository.dart";
-import "../../services/view_models/user_viewmodel.dart";
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
