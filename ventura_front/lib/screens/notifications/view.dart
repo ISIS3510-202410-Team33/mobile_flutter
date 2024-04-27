@@ -13,7 +13,7 @@ class NotificationView extends StatefulWidget {
 
 class NotificationViewState extends State<NotificationView> implements EventObserver{
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { 
     return Scaffold(
       appBar: AppBar(
         title: Text('Notifications'),
