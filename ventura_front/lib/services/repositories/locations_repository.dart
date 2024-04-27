@@ -53,6 +53,7 @@ final class LocationRepository {
     }
   }
 
+
   Future<bool> saveRecommendedLocations(recommendedList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setStringList('recommendedList', recommendedList);
