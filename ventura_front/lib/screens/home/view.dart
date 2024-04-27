@@ -98,6 +98,7 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
                 user: _user,
                 showHomeIcon: false,
                 showLogoutIcon: true,
+                showNotiIcon: true,
               ),
               
               const SizedBox(height: 20),
