@@ -14,6 +14,7 @@ class ConnectionViewModel extends EventViewModel{
   late ReceivePort _receivePort;
   late Isolate _isolate;
   bool _started = false;
+  bool firstTime = true;
 
   factory ConnectionViewModel() {
     return _instance;
@@ -40,6 +41,10 @@ class ConnectionViewModel extends EventViewModel{
           spreadConnectionState(data);
         }
       }
+      if (firstTime) {
+        spreadConnectionState(data);
+        firstTime = false;
+      }
       _isConnected = data;
       _started = true;
     });
@@ -50,7 +55,7 @@ class ConnectionViewModel extends EventViewModel{
     int counter = 0;
     Timer.periodic( Duration(seconds: counter), (timer) async {
       bool isConnected = await _checkInternetConnection();
-      counter = 5;
+      counter = 1;
       sendPort.send(isConnected);
     });
   }
@@ -58,13 +63,13 @@ class ConnectionViewModel extends EventViewModel{
   // Método para verificar la conexión a Internet.
   static Future<bool> _checkInternetConnection() async {
     try {
-      final result = await InternetAddress.lookup('google.com');
+      final result = await InternetAddress.lookup("ventura-backend-jaj1.onrender.com");
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
       } else {
         return false;
       }
-    } on SocketException catch (_) {
+    }  catch (_) {
       return false;
     }
   }
@@ -82,11 +87,6 @@ class ConnectionViewModel extends EventViewModel{
     notify(ConnectionEvent(connection: state));
   }
   
-  @override
-  void subscribe(EventObserver o) {
-    unsubscribeAll();
-    super.subscribe(o);
-  }
 
 }
 

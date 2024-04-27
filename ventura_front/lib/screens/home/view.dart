@@ -72,6 +72,12 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
   }
 
   @override
+  void dispose() {
+    _connectionViewModel.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(

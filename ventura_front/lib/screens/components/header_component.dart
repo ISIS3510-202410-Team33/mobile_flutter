@@ -77,10 +77,7 @@ class Header extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.home_filled, color: Colors.white),
                 onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const HomeView()));
+                  Navigator.pop(context);
                 },
               )
             ],

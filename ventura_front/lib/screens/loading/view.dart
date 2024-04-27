@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/login/view.dart';
+import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/user_viewModel.dart';
 
 import "../../mvvm_components/observer.dart";
+import "./components/no_connection_screen.dart";
 
 
 class LoadingView extends StatefulWidget {
@@ -17,24 +19,26 @@ class LoadingView extends StatefulWidget {
 class LoadingViewState extends State<LoadingView> implements EventObserver{
 
   static final UserViewModel _viewModel = UserViewModel();
+  static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
   bool _isLoading = true;
+  bool _isConnected = false;
 
   @override
   void initState() {
     super.initState();
-
-    Timer(Duration(seconds: 2), () {
+    
       _viewModel.subscribe(this);
-      _viewModel.getCredentials();
-
-    });
+      _connectionViewModel.subscribe(this);
 
     }
 
    @override
   void dispose() {
     super.dispose();
+    _connectionViewModel.unsubscribe(this);
     _viewModel.unsubscribe(this);
+  }
+  void disconnect() {
   }
 
   @override
@@ -51,6 +55,7 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
           builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
+      dispose();
     } else if (event is SignInFailedEvent) {
       print("No Credentials");
       Navigator.of(context).pushReplacement(
@@ -58,6 +63,20 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
           builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
+      dispose();
+      
+    } else if (event is ConnectionEvent) {
+      if (event.connection) {
+        _viewModel.getCredentials();
+      } else {
+        print("No Connection");
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const LoadingNoConnectionView(), // Reemplaza LoginView() con la pantalla siguiente
+          ),
+        );
+        dispose();
+      }
     }
 
   }
