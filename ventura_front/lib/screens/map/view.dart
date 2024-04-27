@@ -388,6 +388,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                     user: user,
                     showHomeIcon: true,
                     showLogoutIcon: false,
+                    showNotiIcon: false
                   ),
                   showNoInternetWidget
                       ? const Padding(

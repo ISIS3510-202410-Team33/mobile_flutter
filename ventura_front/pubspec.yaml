@@ -1,5 +1,5 @@
 name: ventura_front
-description: "A new Flutter project."
+description: "Campus Interactive Map"
 publish_to: 'none'
 version: 0.1.0
 
@@ -18,6 +18,7 @@ dependencies:
   map_launcher: ^3.2.0
   flutter_dotenv: ^5.1.0
   simple_progress_indicators: ^0.2.0
+  url_launcher: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -27,7 +28,8 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  image_path: "lib/icons/app_icon.png"
+  image_path: "lib/icons/icono.png"
+  adaptative_icon_background: "lib/icons/icono.png"
 
 flutter:
   uses-material-design: true

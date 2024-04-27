@@ -8,8 +8,14 @@ class ProfileRepository {
 
   Future<void> loadPasos() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    pasos = prefs.getInt('pasos') ?? 0;
-    pasosHoy = prefs.getInt('pasosHoy') ?? 0;
+    int? savedPasos = prefs.getInt('pasos');
+    if (savedPasos != null) {
+      pasos = savedPasos;
+    }
+    int? savedPasosHoy = prefs.getInt('pasosHoy');
+    if (savedPasosHoy != null) {
+      pasosHoy = savedPasosHoy;
+    }
   }
 
   Future<void> setPasos(int n) async {
@@ -27,8 +33,14 @@ class ProfileRepository {
 
   Future<void> loadCalorias() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    calorias = prefs.getInt('calorias') ?? 0;
-    caloriasHoy = prefs.getInt('caloriasHoy') ?? 0;
+    int? savedCalorias = prefs.getInt('calorias');
+    if (savedCalorias != null) {
+      calorias = savedCalorias;
+    }
+    int? savedCaloriasHoy = prefs.getInt('caloriasHoy');
+    if (savedCaloriasHoy != null) {
+      caloriasHoy = savedCaloriasHoy;
+    }
   }
 
   Future<void> setCalorias(int n) async {

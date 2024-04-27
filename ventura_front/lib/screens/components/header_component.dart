@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/screens/home/components/notifications_button.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/services/models/user_model.dart';
 import 'package:ventura_front/screens/home/components/signout_button.dart';
@@ -7,13 +8,15 @@ class Header extends StatelessWidget {
   final bool showUserInfo;
   final bool showHomeIcon;
   final bool showLogoutIcon;
+  final bool showNotiIcon;  
   final UserModel user;
   const Header(
       {super.key,
       required this.showUserInfo,
       required this.user,
       required this.showHomeIcon,
-      required this.showLogoutIcon});
+      required this.showLogoutIcon,
+      required this.showNotiIcon});
 
   String actualDate() {
     DateTime now = DateTime.now();
@@ -95,6 +98,14 @@ class Header extends StatelessWidget {
     }
   }
 
+  Widget getNotiIcon() {
+    if (showNotiIcon) {
+      return const NotificationComponent();
+    } else {
+      return Container();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -105,6 +116,8 @@ class Header extends StatelessWidget {
         getLogoutIcon(),
         const SizedBox(width: 20),
         getHomeIcon(context),
+        getNotiIcon(),
+        const SizedBox(width: 20),
       ],
     );
   }
