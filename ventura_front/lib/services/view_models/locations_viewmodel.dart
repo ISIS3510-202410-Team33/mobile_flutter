@@ -19,12 +19,13 @@ class LocationsViewModel extends EventViewModel {
   void updateLocationFrequency(userId, locationId ) {
     final defaultModel = UserLocationModel(id: -1, collegeLocation: -1, frequency: -1, user: -1 );
     _repository.updateLocationFrequency(userId, locationId).then(
-      (value) => {
+      (value) {
         if (value.statusCode == 200) {
-          notify(LocationFrequencyUpdateEvent(success: true, model: defaultModel))
+          final decodejson = jsonDecode(value.body);
+          notify(LocationFrequencyUpdateEvent(success: true, model: UserLocationModel.fromJson(decodejson)));
         }
         else {
-          notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel))
+          notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel));
         }
       }
     // ignore: invalid_return_type_for_catch_error
