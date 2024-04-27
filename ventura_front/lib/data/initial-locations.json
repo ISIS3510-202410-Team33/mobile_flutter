@@ -1,0 +1,134 @@
+[
+    {
+        "id": 1,
+        "name": "ML Building",
+        "latitude": 4.602645428131801,
+        "longitude": -74.06487758466257,
+        "floors": 10,
+        "restaurants": 6,
+        "green_zones": 1,
+        "obstructions": true,
+        "college": 1
+    },
+    {
+        "id": 2,
+        "name": "ML Building - Gratto Coffee",
+        "latitude": 4.602645428131801,
+        "longitude": -74.06487758466257,
+        "floors": 1,
+        "restaurants": 1,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 3,
+        "name": "ML Building - Ramon de Zubiria Central Library",
+        "latitude": 4.603233645308469,
+        "longitude": -74.06487107368757,
+        "floors": 5,
+        "restaurants": 0,
+        "green_zones": 0,
+        "obstructions": true,
+        "college": 1
+    },
+    {
+        "id": 4,
+        "name": "ML Building - Waira",
+        "latitude": 4.601533887071907,
+        "longitude": -74.06545282209643,
+        "floors": 1,
+        "restaurants": 1,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 5,
+        "name": "W Building",
+        "latitude": 4.602322724127535,
+        "longitude": -74.06502244862835,
+        "floors": 7,
+        "restaurants": 3,
+        "green_zones": 0,
+        "obstructions": true,
+        "college": 1
+    },
+    {
+        "id": 6,
+        "name": "W Building - Coffee",
+        "latitude": 4.602322724127535,
+        "longitude": -74.06502244862835,
+        "floors": 1,
+        "restaurants": 0,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 7,
+        "name": "Japan Center Building",
+        "latitude": 4.60106570194588,
+        "longitude": -74.06644974069125,
+        "floors": 3,
+        "restaurants": 5,
+        "green_zones": 2,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 8,
+        "name": "Japan Center Building - Coffee",
+        "latitude": 4.60106570194588,
+        "longitude": -74.06644974069125,
+        "floors": 3,
+        "restaurants": 5,
+        "green_zones": 2,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 9,
+        "name": "RGD Building",
+        "latitude": 4.602294,
+        "longitude": -74.066058,
+        "floors": 5,
+        "restaurants": 2,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 10,
+        "name": "RGD Building - Store",
+        "latitude": 4.602294,
+        "longitude": -74.066058,
+        "floors": 1,
+        "restaurants": 0,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 11,
+        "name": "SD Building",
+        "latitude": 4.604299469724717,
+        "longitude": -74.06582923604356,
+        "floors": 10,
+        "restaurants": 7,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    },
+    {
+        "id": 12,
+        "name": "SD Building - Food Court",
+        "latitude": 4.604299469724717,
+        "longitude": -74.06582923604356,
+        "floors": 1,
+        "restaurants": 5,
+        "green_zones": 0,
+        "obstructions": false,
+        "college": 1
+    }
+]

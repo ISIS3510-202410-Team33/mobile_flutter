@@ -1,24 +1,13 @@
 import 'package:http/http.dart' ;
-import '../models/location_model.dart';
-import '../singleton_base.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-final class LocationRepository extends SingletonBase<Map<String,LocationModel>>{
+final class LocationRepository {
 
-  //Singleton Pattern
-  static  LocationRepository? _instance;
-  LocationRepository._internal() {
-    Map<String,LocationModel> locationsInitial = {};
-    state = locationsInitial;
-  }
-  static LocationRepository getState() {
-    return _instance ??= LocationRepository._internal();
-  } 
+  
   //Singleton Pattern
 
   // Conection with Firebase Storage
-
-  
   Future<Response> updateLocationFrequency(userId, locationId) {
     final Map<String, dynamic> queryParameters = {
       "user_id" : userId.toString(),
@@ -60,4 +49,15 @@ final class LocationRepository extends SingletonBase<Map<String,LocationModel>>{
       return Future.error("Error en la conexión");
     }
   }
+
+  Future<bool> saveRecommendedLocations(recommendedList) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setStringList('recommendedList', recommendedList);
+  }
+
+  Future<List<String>> getRecommendedLocations() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('recommendedList') ?? [];
+  }
+
 }
