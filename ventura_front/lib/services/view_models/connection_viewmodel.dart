@@ -4,11 +4,8 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:io';
 
-
-class ConnectionViewModel extends EventViewModel{
-
+class ConnectionViewModel extends EventViewModel {
   static final ConnectionViewModel _instance = ConnectionViewModel._internal();
-
 
   late bool _isConnected;
   late ReceivePort _receivePort;
@@ -30,13 +27,13 @@ class ConnectionViewModel extends EventViewModel{
 
   void _startInternetCheckIsolate() async {
     print("Creating isolate...");
-    _isolate = await  Isolate.spawn(_checkInternetIsolate, _receivePort.sendPort);
+    _isolate =
+        await Isolate.spawn(_checkInternetIsolate, _receivePort.sendPort);
     print("Isolate Created ");
     // Escuchar el puerto para recibir mensajes del Isolate.
     _receivePort.listen((dynamic data) {
-      
       if (_started) {
-        if (_isConnected != data){
+        if (_isConnected != data) {
           spreadConnectionState(data);
         }
       }
@@ -48,9 +45,9 @@ class ConnectionViewModel extends EventViewModel{
   // Método que se ejecutará en el Isolate.
   static void _checkInternetIsolate(SendPort sendPort) {
     int counter = 0;
-    Timer.periodic( Duration(seconds: counter), (timer) async {
+    Timer.periodic(Duration(seconds: counter), (timer) async {
       bool isConnected = await _checkInternetConnection();
-      counter = 5;
+      counter = 1;
       sendPort.send(isConnected);
     });
   }
@@ -78,16 +75,9 @@ class ConnectionViewModel extends EventViewModel{
     _isolate.kill();
   }
 
-  void spreadConnectionState(bool state){
+  void spreadConnectionState(bool state) {
     notify(ConnectionEvent(connection: state));
   }
-  
-  @override
-  void subscribe(EventObserver o) {
-    unsubscribeAll();
-    super.subscribe(o);
-  }
-
 }
 
 class ConnectionEvent extends ViewEvent {
