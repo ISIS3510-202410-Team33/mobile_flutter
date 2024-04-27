@@ -31,13 +31,13 @@ class HomeViewContent extends StatefulWidget {
   State<HomeViewContent> createState() => HomeViewContentState();
 }
 
-class HomeViewContentState extends State<HomeViewContent> implements EventObserver{
+class HomeViewContentState extends State<HomeViewContent>
+    implements EventObserver {
   Position? position;
   late WeatherViewModel weatherViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
   static final UserViewModel _userViewModel = UserViewModel();
   final UserModel _user = _userViewModel.user;
-
 
   Future<Position> determinePosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -61,8 +61,6 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
       print(e);
     }
   }
-
-
 
   @override
   void initState() {
@@ -99,7 +97,6 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
                 showHomeIcon: false,
                 showLogoutIcon: true,
               ),
-              
               const SizedBox(height: 20),
               Consumer<WeatherViewModel>(
                 builder: (context, weatherViewModel, _) {
@@ -123,15 +120,22 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
       ),
     );
   }
-  
+
   @override
   void notify(ViewEvent event) {
     if (event is ConnectionEvent) {
-      if (event.connection){
+      if (event.connection) {
         print("Conexión establecida");
-      }
-      else {
+        setState(() {
+          if (weatherViewModel.weatherData != null) {
+            weatherViewModel.weatherData!.signal = true;
+          }
+        });
+      } else {
         print("Conexión perdida");
+        setState(() {
+          weatherViewModel.weatherData!.signal = false;
+        });
       }
     }
   }
