@@ -14,7 +14,6 @@ class SignOutComponentState extends State<SignOutComponent> implements EventObse
 
   static final UserViewModel _userViewModel = UserViewModel();
 
-
   @override
   void initState() {
     super.initState();
@@ -23,40 +22,35 @@ class SignOutComponentState extends State<SignOutComponent> implements EventObse
 
   @override
   Widget build(BuildContext context) {
-    return 
-    Material(
-      elevation: 15,
-      shadowColor: Colors.black,
-      color: Colors.transparent,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              _userViewModel.signOut();
-            },
-          ),
-          const Text("Sign Out", style: TextStyle(color: Colors.white, fontSize: 12)),
-        ],
-      )
-        
-      
-    )
-    ;
+    return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1C1F22), Color(0xFF2F353A)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            )),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.white),
+              onPressed: () {
+                _userViewModel.signOut();
+              },
+            )
+          ],
+        ));
   }
-  
+
   @override
   void notify(ViewEvent event) {
     if (event is SignOutEvent && event.success) {
       print("SignOutComponent: SignOutEvent: success");
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginView())
-      );
+          context, MaterialPageRoute(builder: (context) => const LoginView()));
     }
-
   }
-
 }
- 
