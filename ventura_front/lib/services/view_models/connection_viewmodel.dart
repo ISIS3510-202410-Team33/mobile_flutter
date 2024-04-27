@@ -4,16 +4,14 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:io';
 
-
-class ConnectionViewModel extends EventViewModel{
-
+class ConnectionViewModel extends EventViewModel {
   static final ConnectionViewModel _instance = ConnectionViewModel._internal();
-
 
   late bool _isConnected;
   late ReceivePort _receivePort;
   late Isolate _isolate;
   bool _started = false;
+  bool firstTime = true;
 
   factory ConnectionViewModel() {
     return _instance;
@@ -30,15 +28,19 @@ class ConnectionViewModel extends EventViewModel{
 
   void _startInternetCheckIsolate() async {
     print("Creating isolate...");
-    _isolate = await  Isolate.spawn(_checkInternetIsolate, _receivePort.sendPort);
+    _isolate =
+        await Isolate.spawn(_checkInternetIsolate, _receivePort.sendPort);
     print("Isolate Created ");
     // Escuchar el puerto para recibir mensajes del Isolate.
     _receivePort.listen((dynamic data) {
-      
       if (_started) {
-        if (_isConnected != data){
+        if (_isConnected != data) {
           spreadConnectionState(data);
         }
+      }
+      if (firstTime) {
+        spreadConnectionState(data);
+        firstTime = false;
       }
       _isConnected = data;
       _started = true;
@@ -48,7 +50,7 @@ class ConnectionViewModel extends EventViewModel{
   // Método que se ejecutará en el Isolate.
   static void _checkInternetIsolate(SendPort sendPort) {
     int counter = 0;
-    Timer.periodic( Duration(seconds: counter), (timer) async {
+    Timer.periodic(Duration(seconds: counter), (timer) async {
       bool isConnected = await _checkInternetConnection();
       counter = 1;
       sendPort.send(isConnected);
@@ -58,13 +60,13 @@ class ConnectionViewModel extends EventViewModel{
   // Método para verificar la conexión a Internet.
   static Future<bool> _checkInternetConnection() async {
     try {
-      final result = await InternetAddress.lookup('google.com');
+      final result = await InternetAddress.lookup("ventura-backend-jaj1.onrender.com");
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
       } else {
         return false;
       }
-    } on SocketException catch (_) {
+    }  catch (_) {
       return false;
     }
   }
@@ -78,16 +80,9 @@ class ConnectionViewModel extends EventViewModel{
     _isolate.kill();
   }
 
-  void spreadConnectionState(bool state){
+  void spreadConnectionState(bool state) {
     notify(ConnectionEvent(connection: state));
   }
-  
-  @override
-  void subscribe(EventObserver o) {
-    unsubscribeAll();
-    super.subscribe(o);
-  }
-
 }
 
 class ConnectionEvent extends ViewEvent {

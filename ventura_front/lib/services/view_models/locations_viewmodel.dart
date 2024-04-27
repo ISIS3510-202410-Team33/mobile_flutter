@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'dart:isolate';
+import 'package:flutter/services.dart' show RootIsolateToken, rootBundle;
 import '../../mvvm_components/viewmodel.dart';
 import '../../mvvm_components/observer.dart';
 
@@ -9,12 +10,56 @@ import '../models/user_location_model.dart';
 
 
 class LocationsViewModel extends EventViewModel {
+  
+  static final LocationsViewModel _instance = LocationsViewModel._internal();
+  List<String> recommendedList = [];
+  String bestRated = "";
+  late LocationRepository _repository;
+  factory LocationsViewModel() => _instance;
+  Map<String, LocationModel> locations = {};
+  int updatings = 0;
+  bool firstTime = true;
 
-  List<LocationModel> locations = [];
+  LocationsViewModel._internal(){
+    _repository = LocationRepository();
+    
+  }
+
+  
   
 
-  final LocationRepository _repository;
-  LocationsViewModel(this._repository);
+  void getLocationsInitial(){
+    notify(LoadingEvent(isLoading: true));
+    if (locations.isEmpty) {
+      rootBundle.loadString('lib/data/initial-locations.json').then((value) {
+        final decodejson = jsonDecode(value);
+        for (var key in decodejson) {
+          final location = LocationModel(
+            id: key['id'],
+            name: key['name'],
+            floors: key['floors'],
+            greenAreas: key['green_zones'],
+            restaurants: key['restaurants'],
+            obstructions: key['obstructions'],
+            latitude: key['latitude'],
+            longitude: key['longitude']
+            );
+          locations.putIfAbsent(key['id'].toString(), () => location);
+        };
+        notify(LoadingEvent(isLoading: false));
+        notify(LocationsLoadedEvent( success: true));
+      }).catchError((error){
+        notify(LoadingEvent(isLoading: false));
+        notify(LocationsLoadedEvent(success: false));
+      });
+    }
+    else {
+      notify(LocationsLoadedEvent(success: true));
+      notify(LoadingEvent(isLoading: false));
+
+    }
+
+  }
 
   void updateLocationFrequency(userId, locationId ) {
     final defaultModel = UserLocationModel(id: -1, collegeLocation: -1, frequency: -1, user: -1 );
@@ -34,10 +79,58 @@ class LocationsViewModel extends EventViewModel {
     });
   }
 
+  void updateRecommendedLocations(userId) async{
+    List<String> cache = await _repository.getRecommendedLocations();
+    recommendedList = cache;
+    if (recommendedList.isNotEmpty){
+      print("Cache acccedido");
+      for (var locationId in recommendedList) {
+        final location = locations[locationId];
+        if (location != null){
+          location.recommended = true;
+          locations.update(location.id.toString(), (value) => location);
+        }
+      }
+      notify(UpdateRecommendedLocationsEvent(success: true, recommendedList: recommendedList));
+    }
+    else{
+      _repository.getRecommendedLocationsFrequency(userId).then((value) {
+        final decodejson = jsonDecode(value.body);
+        print(decodejson);
+        if (decodejson.length > 0) {  
+
+          for (var key in decodejson) {
+            final location = locations[key['id'].toString()];
+            recommendedList.add(key['id'].toString());
+            if (location != null){
+              location.recommended = true;
+              locations.update(location.id.toString(), (value) => location);
+            }
+          }
+          recommendedList = recommendedList.toSet().toList();
+        }
+        _repository.saveRecommendedLocations(recommendedList).then((value) {
+          if (value ){
+            print("Recomendados guardados en cache");
+          }
+          else{
+            print("Error guardando recomendados en cache");
+          }
+        });
+          
+        notify(UpdateRecommendedLocationsEvent(success: true, recommendedList: recommendedList));
+      }).catchError((error){
+        print("Erroooorrrr: " +  error.toString());
+        notify(UpdateRecommendedLocationsEvent(success: false));
+      });
+      }
+    }
+
+
+
   void loadLocations(int userId) {
 
     Map<String, LocationModel> locations = {};
-    notify(LoadingEvent(isLoading: true));
     _repository.getLocations()
     .then((value) {
       final decodejson = jsonDecode(value.body);
@@ -53,7 +146,7 @@ class LocationsViewModel extends EventViewModel {
           longitude: key['longitude']
           );
         locations.putIfAbsent(key['id'].toString(), () => location);
-      }
+      };
       return _repository.getRecommendedLocationsFrequency(userId);
       
     // ignore: invalid_return_type_for_catch_error
@@ -68,20 +161,30 @@ class LocationsViewModel extends EventViewModel {
           }
         }
       }
-      notify(LocationsLoadedEvent(locations: locations, success: true));
-      notify(LoadingEvent(isLoading: false));
+      notify(LocationsLoadedEvent( success: true));
     
     })
     .catchError((error){
       notifyErrorLoadingLocations(error);
     });
+  }
 
+  void getRecommendedLocationsCache(){
+    _repository.getRecommendedLocations().then((value) {
+      print("Cache de recomendaciones cargado");
+      recommendedList = value;
+    }).catchError((error){
+      recommendedList = [];
+    });
   }
 
   void notifyErrorLoadingLocations(error){
     notify(LoadingEvent(isLoading: false));
-    notify(LocationsLoadedEvent(locations: {} , success: false));
+    notify(LocationsLoadedEvent(success: false));
   }
+
+ 
+
 
 
 }
@@ -94,8 +197,7 @@ class LoadingEvent extends ViewEvent {
 
 class LocationsLoadedEvent extends ViewEvent {
   final bool success;
-  final Map<String, LocationModel> locations;
-  LocationsLoadedEvent({required this.locations, required this.success}) : super("LocationsLoadedEvent");
+  LocationsLoadedEvent({ required this.success}) : super("LocationsLoadedEvent");
 }
 
 class LocationFrequencyUpdateEvent extends ViewEvent {
@@ -107,6 +209,19 @@ class LocationFrequencyUpdateEvent extends ViewEvent {
 class LocationsUpdateRecommendendEvent extends ViewEvent {
   final List<UserLocationModel> updatedLocations;
   LocationsUpdateRecommendendEvent({required this.updatedLocations}):super("LocationsUpdateRecommendendEvent");
+}
+
+class UpdateRecommendedLocationsEvent extends ViewEvent {
+  List<String>? recommendedList = [];
+  final bool success;
+
+  UpdateRecommendedLocationsEvent({required this.success, this.recommendedList}):super("UpdateRecommendedLocationsEvent");
+}
+
+class UpdateBestRatedLocationsEvent extends ViewEvent {
+  final bool loading;
+  final bool success;
+  UpdateBestRatedLocationsEvent({required this.success, required this.loading}):super("UpdateBestRatedLocationsEvent");
 }
 
 

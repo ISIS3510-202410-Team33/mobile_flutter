@@ -21,6 +21,7 @@ import 'package:ventura_front/screens/map/components/rateIcon_component.dart';
 class MapView extends StatelessWidget {
   const MapView({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -44,14 +45,16 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
 
   GpsRepository gps = GpsRepository.getState();
 
-  final LocationsViewModel _viewModel =
-      LocationsViewModel(LocationRepository.getState());
+  final LocationsViewModel _viewModel = LocationsViewModel();
   late ProfileViewModel profileViewModel;
+  static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
   bool _isLoading = true;
-  Map<String, LocationModel> locations = {};
+  List<Widget> locationWidgets = [];
   int pasosHoy = 0;
   int caloriasHoy = 0;
+
   final UserModel user = UserViewModel().user;
+  bool showNoInternetWidget = false;
 
   void getPosition() async {
     try {
@@ -77,8 +80,17 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   void initState() {
     super.initState();
     getPosition();
+    _connectionViewModel.subscribe(this);
     _viewModel.subscribe(this);
-    _viewModel.loadLocations(user.id);
+
+    if(_viewModel.locations.isEmpty){
+        print("Cargando loc desde 0");
+        _viewModel.getLocationsInitial();
+    }
+    else {
+      print("Cargando locs ya cargados");
+      notify(LocationsLoadedEvent(success: true));
+    }
 
   }
 
@@ -86,6 +98,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   void dispose() {
     super.dispose();
     _viewModel.unsubscribe(this);
+    _connectionViewModel.unsubscribe(this);
+
   }
 
   @override
@@ -95,9 +109,26 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         _isLoading = event.isLoading;
       });
     } else if (event is LocationsLoadedEvent) {
-      setState(() {
-        locations = event.locations;
-      });
+      if (event.success){
+          locationWidgets = getUpdatedLocationsList();
+          setState(() {
+            _isLoading = false;
+          });
+          if (_connectionViewModel.isConnected() && _viewModel.firstTime){
+            print("First time - pidiendo recomendados");
+            _viewModel.firstTime = false;
+            _viewModel.updateRecommendedLocations(user.id);
+          }
+          else if (_connectionViewModel.isConnected() && _viewModel.updatings > 0){
+            print("Hay actualizaciones pendientes - pidiendo recomendados");
+            _viewModel.updatings = 0;
+            _viewModel.updateRecommendedLocations(user.id);
+          }
+      }
+      else {
+        locationWidgets = [const Text("Error loading locations")];
+        print("Error loading locations");
+      }
     }
       else if (event is LocationFrequencyUpdateEvent) {
       if (event.success) {
@@ -105,8 +136,36 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       } else {
         print("Error updating location frequency");
       }
+    }
+      else if (event is UpdateRecommendedLocationsEvent) {
+        if (event.success) {
+          setState(() {
+            locationWidgets = getUpdatedLocationsList();
+          });
+          print("Recommended locations updated");
+        } else {
+          print("Error updating recommended locations");
+        }
+      }
+      else if (event is ConnectionEvent) {
+        if (event.connection) {
+          if (showNoInternetWidget) {
+            setState(() {
+              showNoInternetWidget = false;
+            });
+            if (_viewModel.updatings > 0){
+              _viewModel.updateRecommendedLocations(user.id);
+            }
+          }
+        } else {
+          setState(() {
+            showNoInternetWidget = true;
+          });
+        }
       }
   }
+
+  
 
   String setDistance(double distance) {
     if (distance < 1000) {
@@ -140,10 +199,13 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     }
   }
 
-  Widget getLocationsWidget() {
-    var widgets = <Widget>[];
-    for (var location in locations.values) {
-      widgets.add(
+  
+
+ 
+  List<Widget> getUpdatedLocationsList() {
+    List<Widget> locationWidgetsUpdated = [];
+    for (var location in _viewModel.locations.values) {
+      locationWidgetsUpdated.add(
         Column(
           children: [
             Column(
@@ -174,6 +236,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                           gps.launchGoogleMaps(
                               location.latitude, location.longitude);
                           _viewModel.updateLocationFrequency(user.id, location.id);
+                          _viewModel.updatings++;
                         },
                         child: Container(
                             padding: const EdgeInsets.only(
@@ -300,8 +363,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         ),
       );
     }
-
-    return Column(children: widgets);
+    return locationWidgetsUpdated;
   }
 
   @override
@@ -328,12 +390,32 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                     showLogoutIcon: false,
                     showNotiIcon: false
                   ),
+                  showNoInternetWidget
+                      ? const Padding(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        child: Column(                          
+                          children: [
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                              Icon(Icons.wifi_off, color: Colors.white, size: 30),
+                              SizedBox(width: 10),
+                              Text("No internet connection",
+                                  style: TextStyle(color: Colors.white, fontSize: 16))
+                            ]),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                          
+                      )
+                      : const SizedBox(),
                   const SizedBox(height: 20),
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : Expanded(
                           child: SingleChildScrollView(
-                              child: getLocationsWidget()))
+                              child: Column(children: locationWidgets,)))
                 ],
               )),
         ));
