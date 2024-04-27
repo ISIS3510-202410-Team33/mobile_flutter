@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
-import "package:flutter/widgets.dart";
 import "package:ventura_front/services/models/user_model.dart";
-import "package:ventura_front/services/repositories/user_repository.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import '../home/components/university_component.dart';
 import 'components/homeIcon_component.dart';
@@ -15,22 +14,20 @@ class ProfileView extends StatefulWidget {
 
 class ProfileViewState extends State<ProfileView> {
 
-  UserModel user = UserModel(uuid: 0, name: "Default", studentCode: 0);
 
-  final UserModel _user = UserRepository.getState().state;
+  final UserModel _user = UserViewModel().user;
 
   @override
   void initState() {
 
     super.initState();
-    user = _user;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-      backgroundColor: Color(0xFFFDF21C), 
+      backgroundColor: const Color(0xFFFDF21C), 
       elevation: 0,
       automaticallyImplyLeading: false,
       leading: Padding(
@@ -61,31 +58,31 @@ class ProfileViewState extends State<ProfileView> {
                     backgroundImage: AssetImage('lib/icons/perfil-de-usuario.png'),
                   ),
                 ),
-                SizedBox(height: 10), 
+                const SizedBox(height: 10), 
                 Text(
-                  '${_user.name}',
+                  '${_user.name} ',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'ABeZee'
                   ),
                 ),
-                    SizedBox(height: 20), 
+                    const SizedBox(height: 20), 
             Container(
                 width: 310, 
                 height: 420, 
                 decoration: BoxDecoration(
-                  color: Color(0xFFF9FFF6), 
+                  color: const Color(0xFFF9FFF6), 
                   borderRadius: BorderRadius.circular(10), 
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    University(),
-                    SizedBox(height: 20),
-                    Text(
+                    const University(),
+                    const SizedBox(height: 20),
+                    const Text(
                       'Bogotá DC, Colombia',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -94,8 +91,8 @@ class ProfileViewState extends State<ProfileView> {
                         fontFamily: 'Lato',
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Text(
+                    const SizedBox(height: 20),
+                    const Text(
                       'Additional Information',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -104,14 +101,14 @@ class ProfileViewState extends State<ProfileView> {
                         fontFamily: 'Lato',
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Image.asset('lib/icons/logo_icon.png', width: 180, height: 180),
-                    SizedBox(height: 20),
-                    Text(
+                    const SizedBox(height: 20),
+                    const Text(
                       '© Ventura',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: const Color.fromARGB(255, 166, 165, 165),
+                        color: Color.fromARGB(255, 166, 165, 165),
                         fontSize: 15,
                         fontFamily: 'Lato',
                       ),

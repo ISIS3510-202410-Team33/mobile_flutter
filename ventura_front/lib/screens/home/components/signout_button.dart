@@ -12,7 +12,7 @@ class SignOutComponent extends StatefulWidget {
 
 class SignOutComponentState extends State<SignOutComponent> implements EventObserver {
 
-  final _userViewModel = UserViewModel(UserRepository.getState());
+  static final UserViewModel _userViewModel = UserViewModel();
 
 
   @override

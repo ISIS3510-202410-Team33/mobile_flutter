@@ -1,103 +1,45 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ventura_front/services/models/user_model.dart';
-import '../singleton_base.dart';
+import 'package:http/http.dart' ;
 
 
-final class UserRepository extends SingletonBase<UserModel>{
+final class UserRepository {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  //Singleton Pattern
-  static  UserRepository? _instance;
-  UserRepository._internal() {
-    UserModel userInitial = UserModel(name: "Default", studentCode: 0, uuid: 0);
-    state = userInitial;
+  final String domain = "ventura-backend-jaj1.onrender.com"; 
+
+  Future<Response> getUser(String email) {
+
+    Map<String, String> queryParameters = {
+      "email" : email,
+    } ;
+    Uri url =  Uri.https(domain, "/api/users/", queryParameters);
+    return get(url);
   }
-  static UserRepository getState() {
-    return _instance ??= UserRepository._internal();
-  } 
-  //Singleton Pattern
 
-
-  Future<UserModel> signIn(String email, String password) async {
-      // Crear instancia si no existe
-      if (_instance == null) {
-        _instance = UserRepository.getState();
-        return _instance!.state;
-      }
-      // Si la lista de locations esta vacia, consultar a Firebase Storage
-      else if(_instance!.state.name == "Default"){ //
-      
-        print("Firebase Sign in");
-        try {
-          UserCredential userCred = await _auth.signInWithEmailAndPassword(email: email, password: password);
-          _instance!.setState(UserModel(name: userCred.user!.email!.split("@")[0] , studentCode: 0, uuid: 0));
-            return _instance!.state;
-        } catch (e) {
-          return Future.error(e);
-        }
-      }
-      else {
-        print("Cache locations");
-        return _instance!.state;
-      }
-
+  Future<Response> createUser(String email){
+    Map<String, String> body = {
+      "name" : email.split("@")[0],
+      "email" : email,
+      "college" : "1",
+    } ;
+    Uri url =  Uri.https(domain, "/api/users/");
+    return post(url, body: body);
+  }
+  
+  Future<UserCredential> signIn(String email, String password) {
+    return _auth.signInWithEmailAndPassword(email: email, password: password);
   } 
 
-  Future<UserModel> signUp(String email, String password) async {
+  Future<UserCredential> signUp(String email, String password) async {
     // Crear instancia si no existe
-      if (_instance == null) {
-        _instance = UserRepository.getState();
-        return _instance!.state;
-      }
-      // Si la lista de locations esta vacia, consultar a Firebase Storage
-      else if(_instance!.state.name == "Default"){ //
-      
-        print("Firebase Sign up");
-        try {
-          UserCredential userCred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-          _instance!.setState(UserModel(name: userCred.user!.email!.split("@")[0] , studentCode: 0, uuid: 0));
-            return _instance!.state;
-        } catch (e) {
-          return Future.error(e);
-        }
-      }
-      else {
-        print("Cache locations");
-        return _instance!.state;
-      }
-
-}
+    return _auth.createUserWithEmailAndPassword(email: email, password: password);
+  }
 
   Future<void> signOut() {
-    _instance!.setState(UserModel(name: "Default", studentCode: 0, uuid: 0));
-    return _auth.signOut().then((value) => null);
+    return _auth.signOut();
   }
 
-  Future<UserModel> getCredentials() async {
-    if (_instance == null) {
-        _instance = UserRepository.getState();
-        return _instance!.state;
-      }
-      // Si la lista de locations esta vacia, consultar a Firebase Storage
-      else if(_instance!.state.name == "Default"){ //
-      
-        print("Firebase Credentials");
-        try {
-          User? userCred = await _auth.currentUser;
-          if (userCred == null){
-            throw Error();
-          }
-          else {
-            _instance!.setState(UserModel(name: userCred.email!.split("@")[0] , studentCode: 0, uuid: 0));
-            return _instance!.state;
-          }
-        } catch (e) {
-          return Future.error(e);
-        }
-      }
-      else {
-        print("Cache locations");
-        return _instance!.state;
-      }
+  User? getCredentials() {
+    return _auth.currentUser;
   }
 }

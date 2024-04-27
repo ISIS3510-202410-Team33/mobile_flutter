@@ -15,16 +15,14 @@ class ConnectionViewModel extends EventViewModel{
   late Isolate _isolate;
   bool _started = false;
 
-  void spreadConnectionState(bool state){
-    notify(ConnectionEvent(connection: state));
-  }
-
   factory ConnectionViewModel() {
     return _instance;
   }
 
   ConnectionViewModel._internal() {
+    print("New ConnectionViewModel");
     if (_started == false) {
+      print("Starting ConnectionViewModel");
       _receivePort = ReceivePort();
       _startInternetCheckIsolate();
     }
@@ -49,8 +47,10 @@ class ConnectionViewModel extends EventViewModel{
 
   // Método que se ejecutará en el Isolate.
   static void _checkInternetIsolate(SendPort sendPort) {
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
+    int counter = 0;
+    Timer.periodic( Duration(seconds: counter), (timer) async {
       bool isConnected = await _checkInternetConnection();
+      counter = 5;
       sendPort.send(isConnected);
     });
   }
@@ -78,6 +78,10 @@ class ConnectionViewModel extends EventViewModel{
     _isolate.kill();
   }
 
+  void spreadConnectionState(bool state){
+    notify(ConnectionEvent(connection: state));
+  }
+  
   @override
   void subscribe(EventObserver o) {
     unsubscribeAll();

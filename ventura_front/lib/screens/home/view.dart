@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:ventura_front/mvvm_components/observer.dart';
 import 'package:ventura_front/services/repositories/user_repository.dart';
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
+import 'package:ventura_front/services/view_models/user_viewModel.dart';
 import 'package:ventura_front/services/view_models/weather_viewmodel.dart';
 import '../components/header_component.dart';
 import './components/weather_component.dart';
@@ -34,6 +35,8 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
   Position? position;
   late WeatherViewModel weatherViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
+  static final UserViewModel _userViewModel = UserViewModel();
+  final UserModel _user = _userViewModel.user;
 
 
   Future<Position> determinePosition() async {
@@ -59,16 +62,13 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
     }
   }
 
-  UserModel user = UserModel(uuid: 0, name: "Default", studentCode: 0);
 
-  final UserModel _user = UserRepository.getState().state;
 
   @override
   void initState() {
     super.initState();
     getCurrentLocation();
     _connectionViewModel.subscribe(this);
-    user = _user;
   }
 
   @override
@@ -95,7 +95,7 @@ class HomeViewContentState extends State<HomeViewContent> implements EventObserv
             children: [
               Header(
                 showUserInfo: true,
-                user: user,
+                user: _user,
                 showHomeIcon: false,
                 showLogoutIcon: true,
               ),

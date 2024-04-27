@@ -2,10 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/login/view.dart';
+import 'package:ventura_front/services/view_models/user_viewModel.dart';
 
 import "../../mvvm_components/observer.dart";
-import "../../services/repositories/user_repository.dart";
-import "../../services/view_models/user_viewmodel.dart";
 
 
 class LoadingView extends StatefulWidget {
@@ -17,7 +16,7 @@ class LoadingView extends StatefulWidget {
 
 class LoadingViewState extends State<LoadingView> implements EventObserver{
 
-  final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
+  static final UserViewModel _viewModel = UserViewModel();
   bool _isLoading = true;
 
   @override
@@ -27,13 +26,7 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
     Timer(Duration(seconds: 2), () {
       _viewModel.subscribe(this);
       _viewModel.getCredentials();
-      if (mounted) { // Verifica si el widget está montado antes de realizar la navegación
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const LoginView(), 
-          ),
-        );
-      }
+
     });
 
     }
@@ -47,12 +40,11 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
   @override
   void notify(ViewEvent event) {  
 
-    if (event is LoadingEvent) {
+    if (event is LoadingUserEvent) {
       setState(() {
         _isLoading = event.isLoading;
       });
     } else if (event is SignInSuccessEvent) {
-
       print("Success");
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

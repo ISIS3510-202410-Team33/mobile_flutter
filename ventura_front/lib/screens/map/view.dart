@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart";
+import "package:ventura_front/services/view_models/connection_viewmodel.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../services/models/location_model.dart";
 import "../../services/models/user_model.dart";
@@ -12,6 +14,7 @@ import "../../services/view_models/locations_viewmodel.dart";
 
 import "../../services/repositories/gps_repository.dart";
 import 'package:ventura_front/screens/map/components/rateIcon_component.dart';
+
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -27,13 +30,15 @@ class MapViewState extends State implements EventObserver{
   GpsRepository gps = GpsRepository.getState();
 
   final LocationsViewModel _viewModel = LocationsViewModel(LocationRepository.getState());
+  static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
+
+  final UserModel user = UserViewModel().user;
+
+
+
   bool _isLoading = true;
   Map<String,LocationModel> locations = {};
   
-  final UserModel user = UserModel(
-    uuid: 1, 
-    name: "Juan",
-    studentCode: 202011638);
   
   void getPosition () async {
     try {
@@ -50,7 +55,7 @@ class MapViewState extends State implements EventObserver{
     super.initState();
     getPosition();
     _viewModel.subscribe(this);
-    _viewModel.loadLocations();
+    _viewModel.loadLocations(user.id);
 
   }
 
@@ -75,9 +80,9 @@ class MapViewState extends State implements EventObserver{
 
   String setDistance(double distance) {
     if (distance < 1000) {
-      return "${distance.toStringAsFixed(2)} mts";
+      return "${distance.toStringAsFixed(2)} Mts";
     } else {
-      return "${(distance / 1000).toStringAsFixed(2)} km";
+      return "${(distance / 1000).toStringAsFixed(2)} Kms";
     }
   } 
 
@@ -130,7 +135,7 @@ class MapViewState extends State implements EventObserver{
               Row(children: [
                 TextButton(onPressed: (){
                   gps.launchGoogleMaps(location.latitude, location.longitude);  
-                  _viewModel.updateLocationFrequency(1, 1);
+                  _viewModel.updateLocationFrequency(user.id, location.id);
                 }, child: Container(
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
                   decoration: BoxDecoration(

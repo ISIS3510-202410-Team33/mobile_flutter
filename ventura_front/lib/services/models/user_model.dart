@@ -1,8 +1,17 @@
 class UserModel {
-  int uuid;
+  int id;
   String name;
-  int studentCode;
+  String email;
+  int college;
   
-  UserModel({required this.uuid, required this.name, required this.studentCode});
+  UserModel({required this.id, required this.name, required this.email, required this.college});
  
+  static UserModel fromJson(body){
+    return UserModel(
+      id: body['id'],
+      name: body['name'],
+      email: body['email'],
+      college: body['college']
+    );
+  }
 }

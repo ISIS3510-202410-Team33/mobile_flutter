@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 class WeatherModel {
   String description;
   String location;
