@@ -1,12 +1,10 @@
 import "package:flutter/material.dart";
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../mvvm_components/observer.dart";
-import "../../services/repositories/user_repository.dart";
 
 
 class  SignUpView extends StatefulWidget {
@@ -18,7 +16,7 @@ class  SignUpView extends StatefulWidget {
 
 class SignUpViewState extends State<SignUpView> implements EventObserver{
 
-  final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
+  final UserViewModel _viewModel = UserViewModel();
   bool _isLoading = true;
 
   final emailController = TextEditingController();
@@ -39,7 +37,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
   @override
   void notify(ViewEvent event) {  
 
-    if (event is LoadingEvent) {
+    if (event is LoadingUserEvent) {
       setState(() {
         _isLoading = event.isLoading;
       });
@@ -51,12 +49,15 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
           content: Text('User created successfully'),
         ),
       );
-      final email = emailController.text.trim();
-      final password = passwordController.text.trim();
-      _viewModel.signIn(email, password);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const HomeView(),
+        ),
+      );
 
     } else if (event is SignUpFailedEvent) {
-      print("Failed");
+      print("Sing up failed");
+      print(event.reason);
       showDialog<String>(
 
         context: context,
@@ -71,21 +72,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
           ],
         ),
       );
-    } else if (event is SignInSuccessEvent) {
-      print("Success sign in");
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
-        ),
-      );
-    } else if (event is SignInFailedEvent) {
-      print("No Credentials");
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const SignUpView(), // Reemplaza LoginView() con la pantalla siguiente
-        ),
-      );
-    }
+    }  
 
   }
 

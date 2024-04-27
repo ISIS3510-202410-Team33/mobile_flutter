@@ -4,6 +4,7 @@ import "package:provider/provider.dart";
 import "package:ventura_front/services/models/user_model.dart";
 import "package:ventura_front/services/repositories/user_repository.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import '../components/header_component.dart';
 import '../home/components/university_component.dart';
@@ -27,16 +28,12 @@ class ProfileViewContent extends StatefulWidget {
 }
 
 class ProfileViewState extends State<ProfileViewContent> {
-  UserModel user = UserModel(uuid: 0, name: "Default", studentCode: 0);
-
+  final UserModel _user = UserViewModel().user;
   late ProfileViewModel profileViewModel;
-
-  final UserModel _user = UserRepository.getState().state;
   @override
   void initState() {
     super.initState();
     loadDatos();
-    user = _user;
   }
 
   void loadDatos() async {
@@ -66,25 +63,25 @@ class ProfileViewState extends State<ProfileViewContent> {
                   '${profileViewModel.caloriasHoy}' +
                   '/' +
                   '${profileViewModel.calorias}',
-              style: TextStyle(color: Colors.white, fontSize: 20))
+              style: const TextStyle(color: Colors.white, fontSize: 20))
         else if (id == 1)
           Text(
               "Today steps:    " +
                   '${profileViewModel.pasosHoy}' +
                   '/' +
                   '${profileViewModel.pasos}',
-              style: TextStyle(color: Colors.white, fontSize: 20)),
+              style: const TextStyle(color: Colors.white, fontSize: 20)),
         IconButton(
-          icon: Icon(Icons.edit),
+          icon: const Icon(Icons.edit),
           onPressed: () {
             showDialog(
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text("Daily goal"),
+                  title: const Text("Daily goal"),
                   content: TextFormField(
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: "Only numbers",
                     ),
                     onChanged: (value) {
@@ -101,7 +98,7 @@ class ProfileViewState extends State<ProfileViewContent> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: Text("Save"),
+                      child: const Text("Save"),
                     ),
                   ],
                 );
@@ -138,7 +135,7 @@ class ProfileViewState extends State<ProfileViewContent> {
               children: [
                 Header(
                   showUserInfo: false,
-                  user: user,
+                  user: _user,
                   showHomeIcon: true,
                   showLogoutIcon: true,
                 ),
@@ -146,7 +143,7 @@ class ProfileViewState extends State<ProfileViewContent> {
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Color(0xFF353A40), width: 1.5),
+                    border: Border.all(color: const Color(0xFF353A40), width: 1.5),
                   ),
                   child: const CircleAvatar(
                     radius: 80,
@@ -154,9 +151,9 @@ class ProfileViewState extends State<ProfileViewContent> {
                         AssetImage('lib/icons/perfil-de-usuario.png'),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 const University(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Material(
                     color: const Color(0xFF262E32),
                     elevation: 10,
@@ -170,24 +167,24 @@ class ProfileViewState extends State<ProfileViewContent> {
                             top: 15, bottom: 15, left: 50, right: 50),
                         child: Row(
                           children: [
-                            Icon(Icons.account_circle,
+                            const Icon(Icons.account_circle,
                                 color: Colors.white, size: 30),
-                            SizedBox(
+                            const SizedBox(
                               width: 20,
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                    user.name[0].toUpperCase() +
-                                        user.name.substring(1),
-                                    style: TextStyle(
+                                    _user.name[0].toUpperCase() +
+                                        _user.name.substring(1),
+                                    style: const TextStyle(
                                         color: Colors.white, fontSize: 20)),
                               ],
                             ),
                           ],
                         ))),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Material(
                     color: const Color(0xFF262E32),
                     elevation: 10,
@@ -201,36 +198,36 @@ class ProfileViewState extends State<ProfileViewContent> {
                             top: 15, bottom: 15, left: 50, right: 50),
                         child: Row(
                           children: [
-                            Icon(Icons.email, color: Colors.white, size: 30),
-                            SizedBox(
+                            const Icon(Icons.email, color: Colors.white, size: 30),
+                            const SizedBox(
                               width: 20,
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Email",
+                                const Text("Email",
                                     style: TextStyle(
                                         color: Colors.white, fontSize: 16)),
-                                Text(user.name,
-                                    style: TextStyle(
+                                Text(_user.name,
+                                    style: const TextStyle(
                                         color: Colors.grey, fontSize: 14)),
                               ],
                             ),
                           ],
                         ))),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 editar(1), //pasos
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 ProgressBarY(
                     valor: profileViewModel.pasosHoy / profileViewModel.pasos),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 editar(0), //calorias
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 ProgressBarY(
                     valor: profileViewModel.caloriasHoy /
                         profileViewModel.calorias),
-                SizedBox(height: 10),
-                Text(
+                const SizedBox(height: 10),
+                const Text(
                     "This information is stored locally and will be deleted at 12:00am of each day.",
                     softWrap: true,
                     style: TextStyle(

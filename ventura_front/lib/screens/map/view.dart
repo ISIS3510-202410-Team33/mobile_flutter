@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart";
+import "package:ventura_front/services/view_models/connection_viewmodel.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 import "package:provider/provider.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
 
@@ -15,6 +17,7 @@ import "../../services/view_models/locations_viewmodel.dart";
 import "../../services/repositories/gps_repository.dart";
 import 'package:ventura_front/screens/map/components/rateIcon_component.dart';
 
+
 class MapView extends StatelessWidget {
   const MapView({super.key});
 
@@ -25,9 +28,13 @@ class MapView extends StatelessWidget {
       child: MapViewContent(),
     );
   }
+  
+  
 }
 
 class MapViewContent extends StatefulWidget {
+  const MapViewContent({super.key});
+
   @override
   State<MapViewContent> createState() => MapViewState();
 }
@@ -44,8 +51,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   Map<String, LocationModel> locations = {};
   int pasosHoy = 0;
   int caloriasHoy = 0;
-  final UserModel user =
-      UserModel(uuid: 1, name: "Juan", studentCode: 202011638);
+  final UserModel user = UserViewModel().user;
 
   void getPosition() async {
     try {
@@ -72,7 +78,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     super.initState();
     getPosition();
     _viewModel.subscribe(this);
-    _viewModel.loadLocations();
+    _viewModel.loadLocations(user.id);
+
   }
 
   @override
@@ -92,13 +99,20 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         locations = event.locations;
       });
     }
+      else if (event is LocationFrequencyUpdateEvent) {
+      if (event.success) {
+        print("Location frequency updated");
+      } else {
+        print("Error updating location frequency");
+      }
+      }
   }
 
   String setDistance(double distance) {
     if (distance < 1000) {
-      return "${distance.toStringAsFixed(2)} mts";
+      return "${distance.toStringAsFixed(2)} Mts";
     } else {
-      return "${(distance / 1000).toStringAsFixed(2)} km";
+      return "${(distance / 1000).toStringAsFixed(2)} Kms";
     }
   }
 
@@ -159,7 +173,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                               location.latitude, location.longitude));
                           gps.launchGoogleMaps(
                               location.latitude, location.longitude);
-                          _viewModel.updateLocationFrequency(1, 1);
+                          _viewModel.updateLocationFrequency(user.id, location.id);
                         },
                         child: Container(
                             padding: const EdgeInsets.only(

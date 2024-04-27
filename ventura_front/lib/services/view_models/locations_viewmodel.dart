@@ -19,12 +19,13 @@ class LocationsViewModel extends EventViewModel {
   void updateLocationFrequency(userId, locationId ) {
     final defaultModel = UserLocationModel(id: -1, collegeLocation: -1, frequency: -1, user: -1 );
     _repository.updateLocationFrequency(userId, locationId).then(
-      (value) => {
+      (value) {
         if (value.statusCode == 200) {
-          notify(LocationFrequencyUpdateEvent(success: true, model: defaultModel))
+          final decodejson = jsonDecode(value.body);
+          notify(LocationFrequencyUpdateEvent(success: true, model: UserLocationModel.fromJson(decodejson)));
         }
         else {
-          notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel))
+          notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel));
         }
       }
     // ignore: invalid_return_type_for_catch_error
@@ -33,10 +34,9 @@ class LocationsViewModel extends EventViewModel {
     });
   }
 
-  void loadLocations() {
+  void loadLocations(int userId) {
 
     Map<String, LocationModel> locations = {};
-
     notify(LoadingEvent(isLoading: true));
     _repository.getLocations()
     .then((value) {
@@ -54,16 +54,18 @@ class LocationsViewModel extends EventViewModel {
           );
         locations.putIfAbsent(key['id'].toString(), () => location);
       }
-      return _repository.getRecommendedLocationsFrequency(1);
+      return _repository.getRecommendedLocationsFrequency(userId);
       
     // ignore: invalid_return_type_for_catch_error
     }).then((value) {
       final decodejson = jsonDecode(value.body);
-      for (var key in decodejson) {
-        final location = locations[key['id'].toString()];
-        if (location != null){
-          location.recommended = true;
-          locations.update(location.id.toString(), (value) => location);
+      if (decodejson.length > 0) {  
+        for (var key in decodejson) {
+          final location = locations[key['id'].toString()];
+          if (location != null){
+            location.recommended = true;
+            locations.update(location.id.toString(), (value) => location);
+          }
         }
       }
       notify(LocationsLoadedEvent(locations: locations, success: true));

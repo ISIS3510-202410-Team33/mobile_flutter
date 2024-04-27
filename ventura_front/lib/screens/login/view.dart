@@ -4,10 +4,10 @@ import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/signUp/view.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../mvvm_components/observer.dart";
 import "../../services/repositories/user_repository.dart";
-import "../../services/view_models/user_viewmodel.dart";
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -18,7 +18,7 @@ class LoginView extends StatefulWidget {
 
 class LoginViewState extends State<LoginView> implements EventObserver{
 
-  final UserViewModel _viewModel = UserViewModel(UserRepository.getState());
+  static final UserViewModel _viewModel = UserViewModel();
   bool _isLoading = true;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -38,7 +38,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
   @override
   void notify(ViewEvent event) {  
 
-    if (event is LoadingEvent) {
+    if (event is LoadingUserEvent) {
       setState(() {
         _isLoading = event.isLoading;
       });
@@ -51,7 +51,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
         ),
       );
     } else if (event is SignInFailedEvent) {
-      print("Failed");
+      print(event.reason);
       showDialog<String>(
         context: context,
         builder: (BuildContext context) => AlertDialog(
