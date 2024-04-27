@@ -60,4 +60,5 @@ final class LocationRepository extends SingletonBase<Map<String,LocationModel>>{
       return Future.error("Error en la conexión");
     }
   }
+
 }
