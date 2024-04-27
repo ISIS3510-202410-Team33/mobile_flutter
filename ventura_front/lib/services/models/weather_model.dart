@@ -16,6 +16,30 @@ class WeatherModel {
       required this.humidity,
       required this.signal});
 
+  Map<String, dynamic> toJson() {
+    return {
+      'description': description,
+      'location': location,
+      'temperature': temperature,
+      'feelsLike': feelsLike,
+      'pressure': pressure,
+      'humidity': humidity,
+      'signal': signal,
+    };
+  }
+
+  factory WeatherModel.comingJson(Map<String, dynamic> json) {
+    return WeatherModel(
+      description: json['description'],
+      location: json['location'],
+      temperature: json['temperature'],
+      feelsLike: json['feelsLike'],
+      pressure: json['pressure'],
+      humidity: json['humidity'],
+      signal: json['signal'],
+    );
+  }
+
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
     return WeatherModel(
         description: json['weather'][0]['description'],
