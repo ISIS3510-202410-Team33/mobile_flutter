@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 import 'package:flutter/services.dart' show RootIsolateToken, rootBundle;
+import 'package:ventura_front/services/repositories/gps_repository.dart';
 import '../../mvvm_components/viewmodel.dart';
 import '../../mvvm_components/observer.dart';
 
@@ -25,7 +26,32 @@ class LocationsViewModel extends EventViewModel {
     
   }
 
-  
+  String getSite(String type){
+    Map<String, LocationModel> locationsCopy = locations;
+    Map<String, double> distances = {};
+
+    GpsRepository gps = GpsRepository.getState();
+
+    for (var key in locationsCopy.keys) {
+      LocationModel location = locationsCopy[key]!;
+      double distance = gps.getDistanceLatLon(location.latitude, location.longitude);
+      distances.putIfAbsent(key, () => distance);
+    }
+    distances.entries.toList().sort(((a, b) => a.key.compareTo(b.key)));
+
+    for (var key in distances.keys) {
+      LocationModel location = locationsCopy[key]!;
+      if (type == "green_areas" && location.greenAreas > 0){
+        return location.id.toString();
+      }
+      else if (type == "restaurant" && location.restaurants > 0){
+        return location.id.toString();
+      }
+    }
+    
+    return distances.entries.first.key;
+    
+  }
   
 
   void getLocationsInitial(){

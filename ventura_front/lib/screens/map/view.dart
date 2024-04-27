@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/widgets.dart";
 import "package:geolocator/geolocator.dart";
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
@@ -26,7 +27,7 @@ class MapView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ProfileViewModel(),
-      child: MapViewContent(),
+      child: const MapViewContent(),
     );
   }
   
@@ -52,6 +53,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   List<Widget> locationWidgets = [];
   int pasosHoy = 0;
   int caloriasHoy = 0;
+  bool showSitesButtons = true;
+  bool showAllLocationsButton = false;
 
   final UserModel user = UserViewModel().user;
   bool showNoInternetWidget = false;
@@ -152,6 +155,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
           if (showNoInternetWidget) {
             setState(() {
               showNoInternetWidget = false;
+              showSitesButtons = true;
             });
             if (_viewModel.updatings > 0){
               _viewModel.updateRecommendedLocations(user.id);
@@ -159,11 +163,14 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
           }
         } else {
           setState(() {
+            showSitesButtons = false;
             showNoInternetWidget = true;
           });
         }
       }
   }
+
+
 
   
 
@@ -199,7 +206,25 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     }
   }
 
-  
+  void restart(){
+    _viewModel.getLocationsInitial();
+  }
+
+  void paintOneLocationById(String id){
+    LocationModel? finalLocation = _viewModel.locations[id];
+    Map<String, LocationModel> locationsLocal = Map();
+    (setState(() {
+      if (finalLocation != null){
+        showAllLocationsButton = true;
+        print(finalLocation.toString());
+        print("Llegó aca");
+          locationsLocal.update(id, (value) => finalLocation);
+        _viewModel.locations = locationsLocal;
+        locationWidgets = getUpdatedLocationsList();
+        
+      }
+    }));
+  }
 
  
   List<Widget> getUpdatedLocationsList() {
@@ -229,14 +254,35 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                   children: [
                     TextButton(
                         onPressed: () {
-                          addCalorias(gps.getDistanceLatLon(
-                              location.latitude, location.longitude));
-                          addPasos(gps.getDistanceLatLon(
-                              location.latitude, location.longitude));
-                          gps.launchGoogleMaps(
-                              location.latitude, location.longitude);
-                          _viewModel.updateLocationFrequency(user.id, location.id);
-                          _viewModel.updatings++;
+                          if (_connectionViewModel.isConnected()){
+                            addCalorias(gps.getDistanceLatLon(
+                                location.latitude, location.longitude));
+                            addPasos(gps.getDistanceLatLon(
+                                location.latitude, location.longitude));
+                            gps.launchGoogleMaps(
+                                location.latitude, location.longitude);
+                            _viewModel.updateLocationFrequency(user.id, location.id);
+                            _viewModel.updatings++;
+                          } 
+                          else{
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("No internet connection"),
+                                  content: const Text("You need an internet connection to locate a place"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: (){
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text("OK"),
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          }
                         },
                         child: Container(
                             padding: const EdgeInsets.only(
@@ -330,12 +376,33 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
               alignment: Alignment.centerLeft,
               child: GestureDetector(
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return const RateIcon();
-                    },
-                  );
+                  if(_connectionViewModel.isConnected()){
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return const RateIcon();
+                      },
+                    );
+                  }
+                  else{
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("No internet connection"),
+                          content: const Text("You need an internet connection to rate a place"),
+                          actions: [
+                            TextButton(
+                              onPressed: (){
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("OK"),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  }
                 },
                 child: const Text(
                   'Rate this location!',
@@ -365,6 +432,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     }
     return locationWidgetsUpdated;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -409,6 +478,52 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                         ),
                           
                       )
+                      : const SizedBox(),
+                  showSitesButtons
+                      ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 20),
+                          const Text("Search for a place to go",
+                              style: TextStyle(color: Colors.white, fontSize: 20)),
+                          const SizedBox(height: 20),
+
+                          Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                paintOneLocationById(_viewModel.getSite("green_areas"));
+
+                              },
+                              child: const Text("Search Green Zone"),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            ElevatedButton(
+                              onPressed: () {
+                                paintOneLocationById(_viewModel.getSite("restaurants"));
+                              },
+                              child: const Text("Search Restaurant"),
+                            ),
+                          ],
+                          
+                        ),
+                        const SizedBox(height: 20),
+                        showAllLocationsButton
+                            ? ElevatedButton(
+                                onPressed: () {
+                                  (setState( () => showAllLocationsButton = false));
+                                  restart();
+                                },
+                                child: const Text("Show all locations"),
+                              )
+                            : const SizedBox(),
+
+
+                        ],
+                        )
                       : const SizedBox(),
                   const SizedBox(height: 20),
                   _isLoading

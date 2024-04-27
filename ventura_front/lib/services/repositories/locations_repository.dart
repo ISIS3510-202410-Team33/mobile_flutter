@@ -8,6 +8,9 @@ final class LocationRepository {
   //Singleton Pattern
 
   // Conection with Firebase Storage
+  
+
+
   Future<Response> updateLocationFrequency(userId, locationId) {
     final Map<String, dynamic> queryParameters = {
       "user_id" : userId.toString(),
