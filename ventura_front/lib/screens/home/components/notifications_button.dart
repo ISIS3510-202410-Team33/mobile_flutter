@@ -39,8 +39,8 @@ class NotificationComponentState extends State<NotificationComponent> implements
             IconButton(
               icon: const Icon(Icons.notifications, color: Colors.white),
               onPressed: () {
-                //Navigator.push(context,
-                //MaterialPageRoute(builder: (context) => const NotificationView()));
+                Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const NotificationView()));
                 print("NotificationComponent: onPressed");
               },
             )
