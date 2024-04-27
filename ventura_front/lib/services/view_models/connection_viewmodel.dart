@@ -50,7 +50,7 @@ class ConnectionViewModel extends EventViewModel{
     int counter = 0;
     Timer.periodic( Duration(seconds: counter), (timer) async {
       bool isConnected = await _checkInternetConnection();
-      counter = 5;
+      counter = 1;
       sendPort.send(isConnected);
     });
   }
