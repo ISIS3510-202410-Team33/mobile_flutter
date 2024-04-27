@@ -138,6 +138,7 @@ class ProfileViewState extends State<ProfileViewContent> {
                   user: _user,
                   showHomeIcon: true,
                   showLogoutIcon: true,
+                  showNotiIcon: true
                 ),
                 const SizedBox(height: 20),
                 Container(
