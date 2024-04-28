@@ -71,6 +71,7 @@ class HomeViewContentState extends State<HomeViewContent>
 
   @override
   void dispose() {
+    _userViewModel.unsubscribe(this);
     _connectionViewModel.unsubscribe(this);
     super.dispose();
   }

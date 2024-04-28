@@ -218,7 +218,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         showAllLocationsButton = true;
         print(finalLocation.toString());
         print("Llegó aca");
-          locationsLocal.update(id, (value) => finalLocation);
+          locationsLocal.putIfAbsent(finalLocation.id.toString(), () => finalLocation);
         _viewModel.locations = locationsLocal;
         locationWidgets = getUpdatedLocationsList();
         

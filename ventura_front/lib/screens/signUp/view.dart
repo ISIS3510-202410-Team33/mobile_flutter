@@ -99,7 +99,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
         print("Conexión establecida");
         // Conexión restablecida, mostrar mensaje en verde
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           backgroundColor: Colors.green,
           content: Text('You are connected again'),
         ),
@@ -109,7 +109,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
         print("Conexión perdida");
         // Conexión perdida, mostrar mensaje en rojo
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           backgroundColor: Colors.red,
           content: Text('You can\'t sign up because you don\'t have connection'),
         ),
@@ -158,8 +158,8 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                       children: [
                         Column(
                           children: [
-                            const SizedBox(
-                              height: 30,
+                            SizedBox(
+                              height: MediaQuery.of(context).padding.top,
                               width: double.infinity,
                             ),
                             Padding(
@@ -172,7 +172,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                                             Navigator.pop(context);
                                           },
                                         )
-                                      : SizedBox(),
+                                      : const SizedBox(),
                                 ],
                               ),
                             )

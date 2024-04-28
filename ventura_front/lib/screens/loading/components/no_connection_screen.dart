@@ -12,7 +12,7 @@ class LoadingNoConnectionView extends StatefulWidget {
 
 class LoadingNoConnectionState extends State<LoadingNoConnectionView> implements EventObserver{
 
-  ConnectionViewModel _connectionViewModel = ConnectionViewModel();
+  static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
 
   @override
   initState() {
@@ -22,10 +22,24 @@ class LoadingNoConnectionState extends State<LoadingNoConnectionView> implements
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
+  }
+
+  void disconnect(){
     _connectionViewModel.unsubscribe(this);
-    
+  }
+
+  @override
+  void notify(ViewEvent event) {
+    if (event is ConnectionEvent) {
+      if (event.connection) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const LoadingView(),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -117,7 +131,7 @@ class LoadingNoConnectionState extends State<LoadingNoConnectionView> implements
                               ),
                             ),
                             Text(
-                              'have no connection',
+                              'have no internet',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
@@ -125,7 +139,7 @@ class LoadingNoConnectionState extends State<LoadingNoConnectionView> implements
                               ),
                             ),
                             Text(
-                              'to the internet',
+                              'connection',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
@@ -151,17 +165,5 @@ class LoadingNoConnectionState extends State<LoadingNoConnectionView> implements
     );
   }
 
-  @override
-  void notify(ViewEvent event) {
-    if (event is ConnectionEvent) {
-      if (event.connection) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const LoadingView(),
-          ),
-        );
-        _connectionViewModel.unsubscribe(this);
-      }
-    }
-  }
+  
 }

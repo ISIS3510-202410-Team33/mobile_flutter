@@ -20,17 +20,14 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
 
   static final UserViewModel _viewModel = UserViewModel();
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
-  bool _isLoading = true;
-  bool _isConnected = false;
 
   @override
   void initState() {
     super.initState();
-    
-      _viewModel.subscribe(this);
-      _connectionViewModel.subscribe(this);
-
-    }
+    print("New Loading view");
+    _viewModel.subscribe(this);
+    _connectionViewModel.subscribe(this);
+  }
 
    @override
   void dispose() {
@@ -38,44 +35,41 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
     _connectionViewModel.unsubscribe(this);
     _viewModel.unsubscribe(this);
   }
-  void disconnect() {
-  }
-
   @override
   void notify(ViewEvent event) {  
 
-    if (event is LoadingUserEvent) {
-      setState(() {
-        _isLoading = event.isLoading;
-      });
-    } else if (event is SignInSuccessEvent) {
-      print("Success");
+    if (event is SignInSuccessEvent) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
-      dispose();
-    } else if (event is SignInFailedEvent) {
-      print("No Credentials");
+    } 
+    else if (event is SignInFailedEvent) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
-      dispose();
       
-    } else if (event is ConnectionEvent) {
+    }
+    else if (event is ConnectionEvent) {
+      print("Connection state: ${event.connection ? 'Connected' : 'Disconnected'}");
       if (event.connection) {
-        _viewModel.getCredentials();
+        if (_viewModel.isSuscribed(this)){
+          _viewModel.getCredentials();
+        }
+        else {
+          _viewModel.subscribe(this);
+          _viewModel.getCredentials();
+        }
       } else {
-        print("No Connection");
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const LoadingNoConnectionView(), // Reemplaza LoginView() con la pantalla siguiente
           ),
         );
-        dispose();
       }
     }
 

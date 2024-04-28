@@ -29,14 +29,15 @@ class LoginViewState extends State<LoginView> implements EventObserver{
   @override
   void initState() {
     super.initState();
-    _viewModel.subscribe(this);
     _connectionViewModel.subscribe(this);
+    _viewModel.subscribe(this);
   }
 
   @override
   void dispose() {
     super.dispose();
     _viewModel.unsubscribe(this);
+    _connectionViewModel.unsubscribe(this);
   }
 
   @override
@@ -78,8 +79,10 @@ class LoginViewState extends State<LoginView> implements EventObserver{
       if (event.connection){
         print("Conexión establecida");
         // Conexión restablecida, mostrar mensaje en verde
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 4),
           backgroundColor: Colors.green,
           content: Text('You are connected again'),
         ),
@@ -89,7 +92,8 @@ class LoginViewState extends State<LoginView> implements EventObserver{
         print("Conexión perdida");
         // Conexión perdida, mostrar mensaje en rojo
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
+          duration: Duration(days: 1),
           backgroundColor: Colors.red,
           content: Text('You can\'t log in because you don\'t have connection'),
         ),
@@ -128,8 +132,8 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                     children: [
                       Column(
                         children: [
-                          const SizedBox(
-                            height: 30,
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.top,
                             width: double.infinity,
                           ),
                           GestureDetector(
@@ -155,13 +159,13 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                       Container(
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height * 0.7,
-                        alignment: Alignment.centerLeft,
+                        alignment: Alignment.bottomLeft,
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           image: DecorationImage(
                             image: AssetImage('lib/icons/gooseLogin.png'),
                             fit: BoxFit.scaleDown,
-                            alignment: Alignment.topLeft,
+                            alignment: Alignment.bottomLeft,
                           ),
                         ),
                         child: Padding(
@@ -256,7 +260,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                           width: MediaQuery.of(context).size.width * 0.3,
                                           height: 50,
                                           child: ElevatedButton(
-                                            onPressed: _hasConnection
+                                            onPressed: _connectionViewModel.isConnected()
                                                 ? () {
                                                     final email = emailController.text.trim();
                                                     final password = passwordController.text.trim();
