@@ -1,150 +1,63 @@
-import "package:flutter/material.dart";
-import "package:flutter/widgets.dart";
-import 'components/homeIcon_component.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ventura_front/screens/settings/components/theme_provider.dart';
 
-class SettingsView extends StatefulWidget {
-  const SettingsView({super.key});
-
-  @override
-  State createState() => SettingsViewState();
-}
-
-class SettingsViewState extends State<SettingsView> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  bool switchValue1 = true;
-  bool switchValue2 = true;
-  bool switchValue3 = true;
-
+class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Color(0xFF16171B), Color(0xFF353A40)],
-            begin: Alignment.bottomRight,
-            end: Alignment.topLeft),
+    final themeProvider = Provider.of
+    <ThemeProvider>(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Settings'),
       ),
-      width: double.infinity,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-            title: Text('App Settings', style: TextStyle(color: Colors.white)),
-            backgroundColor: Color(0xFF353A40),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 14),
-                child: HomeIcon(),
-              )
-            ]),
-        body: ListView(
-          children: [
-            Container(
-              width: double.infinity,
-              color: Color(0xFF555555),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 0.0, 10.0),
-                child: Text(
-                  "GENERAL",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                  ),
-                ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Preferences',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            _buildSwitchOption('Use Wifi only', switchValue1),
-            _buildDropdownOption(
-                'Wifi Data Usage',
-                ['Automatic', 'Limit data usage', 'Background data'],
-                'Automatic'),
-            _buildDropdownOption(
-                'Language', ['English', 'Spanish', 'French'], 'English'),
-            SizedBox(height: 20.0),
-            Container(
-              width: double.infinity,
-              color: Color(0xFF555555),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 0.0, 10.0),
-                child: Text(
-                  "PREFERENCES",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                  ),
-                ),
+          ),
+          ListTile(
+            title: Text('Theme'),
+            subtitle: Text(
+              themeProvider.getTheme() == ThemeData.dark()
+                  ? 'Dark Mode'
+                  : 'Light Mode',
+              style: TextStyle(
+                color: themeProvider.getTheme() == ThemeData.dark()
+                    ? Colors.white
+                    : Colors.black,
               ),
             ),
-            _buildDropdownOption('Theme', ['Light', 'Dark'], 'Dark'),
-            _buildSwitchOption('Allow notifications', switchValue3),
-            SizedBox(height: 20.0),
-            Container(
-              width: double.infinity,
-              color: Color(0xFF555555),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 0.0, 10.0),
-                child: Text(
-                  "SUPPORT",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                  ),
-                ),
-              ),
+            trailing: Switch(
+              value: themeProvider.getTheme() == ThemeData.dark(),
+              onChanged: (value) {
+                _saveThemePreference(value);
+                if (value) {
+                  themeProvider.setDarkTheme();
+                } else {
+                  themeProvider.setLightTheme();
+                }
+              },
             ),
-            ListTile(
-              title: Text('Help Center',
-                  style: TextStyle(
-                    color: Colors.white,
-                  )),
-              onTap: () {},
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
-  }
+ }
 
-  Widget _buildSwitchOption(String title, bool initialValue) {
-    return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.white),
-      ),
-      trailing: Switch(
-        value: initialValue,
-        onChanged: (value) {},
-        activeTrackColor: Color(0xFF353A40),
-        activeColor: Color(0xFF555555),
-      ),
-    );
-  }
+  // Método para guardar la preferencia del usuario
+  void _saveThemePreference(bool isDarkTheme) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('isDarkTheme', isDarkTheme);
+}
 
-  Widget _buildDropdownOption(
-      String title, List<String> options, String initialValue) {
-    return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.white),
-      ),
-      trailing: DropdownButton<String>(
-        value: initialValue,
-        onChanged: (newValue) {},
-        style: TextStyle(color: Colors.white),
-        dropdownColor: Color(0xFF353A40),
-        items: options.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-      ),
-    );
-  }
 }

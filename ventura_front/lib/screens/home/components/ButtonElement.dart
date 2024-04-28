@@ -22,13 +22,13 @@ class MyButton extends StatelessWidget {
     return InkWell(
         onTap: () {
           if (title == "Map") {
-            Navigator.push(context,
+            Navigator.push(context, 
                 MaterialPageRoute(builder: (context) => const MapView()));
           } else if (title == "Schedule") {
             print("Schedule");
           } else if (title == "Settings") {
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const SettingsView()));
+                MaterialPageRoute(builder: (context) => SettingsView()));
           } else if (title == "Profile") {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const ProfileView()));

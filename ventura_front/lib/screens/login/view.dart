@@ -4,6 +4,7 @@ import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/signUp/view.dart";
+import "package:ventura_front/sensors_components/proximity_sensor.dart";
 
 import "../../mvvm_components/observer.dart";
 import "../../services/repositories/user_repository.dart";

@@ -31,7 +31,6 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
 
    @override
   void dispose() {
-    super.dispose();
     _connectionViewModel.unsubscribe(this);
     _viewModel.unsubscribe(this);
   }
