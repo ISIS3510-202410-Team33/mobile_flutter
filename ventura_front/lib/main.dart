@@ -6,12 +6,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ventura_front/firebase_options.dart';
 import 'package:ventura_front/screens/loading/view.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ventura_front/screens/settings/components/theme_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:ventura_front/sensors_components/proximity_sensor.dart';
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await loadEnv().catchError((e) => print("Error cargando archivo .env: $e"));
-  runApp(const MainApp());
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool isDarkMode = prefs.getBool('isDarkMode') ?? false;
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: MainApp(isDarkMode: isDarkMode),
+    ),
+  );
   deleteSharedPreferencesEveryMinute();
 }
 
@@ -25,12 +37,16 @@ Future<void> loadEnv() async {
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final bool isDarkMode;
+  const MainApp({Key? key, required this.isDarkMode}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    final themeProvider = Provider.of
+    <ThemeProvider>(context);
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoadingView(),
+      theme: themeProvider.getTheme(),
+      home: Proximity(child: const LoadingView()),
     );
   }
 }
