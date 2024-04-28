@@ -293,7 +293,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                                                 ? () {
                                                     final email = emailController.text.trim();
                                                     final password = passwordController.text.trim();
-                                                    _viewModel.signIn(email, password);
+                                                    _viewModel.signUp(email, password);
                                                   }
                                                 : null, // Desactiva el botón si no hay conexión
                                             style: ElevatedButton.styleFrom(

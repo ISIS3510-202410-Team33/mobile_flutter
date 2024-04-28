@@ -158,7 +158,7 @@ class LoadingNoConnectionState extends State<LoadingNoConnectionView> implements
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => const LoadingView(),
-          ),
+          ), 
         );
         _connectionViewModel.unsubscribe(this);
       }
