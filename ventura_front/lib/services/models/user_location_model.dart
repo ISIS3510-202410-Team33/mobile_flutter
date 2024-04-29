@@ -11,7 +11,7 @@ class UserLocationModel {
       id: body['id'],
       frequency: body['frequency'],
       user: body['user'],
-      collegeLocation: body['collegeLocation']
+      collegeLocation: body['college_location']
     );
   }
 }

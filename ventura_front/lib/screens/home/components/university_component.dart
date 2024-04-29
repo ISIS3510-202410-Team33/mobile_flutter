@@ -28,8 +28,8 @@ class University extends StatelessWidget {
             ),
             borderRadius: BorderRadius.all(Radius.circular(60)),
           ),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 5, bottom: 5, left: 50, right: 50),
+          child: const Padding(
+            padding: EdgeInsets.only(top: 5, bottom: 5, left: 50, right: 50),
             child: Text(
               "Universidad de los Andes",
               style: TextStyle(
@@ -44,9 +44,9 @@ class University extends StatelessWidget {
   }
 
   _launchURL() async {
-    const url = 'https://uniandes.edu.co/'; 
-    if (await canLaunch(url)) {
-      await launch(url);
+    final url = Uri.https('uniandes.edu.co'); 
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     } else {
       throw 'Could not launch $url';
     }

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter/widgets.dart";
 import "package:provider/provider.dart";
+import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/services/models/user_model.dart";
 import "package:ventura_front/services/repositories/user_repository.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
@@ -11,18 +12,23 @@ import '../home/components/university_component.dart';
 import "components/progress_bar.dart";
 
 class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
+  final HomeViewContentState homeViewContentState;
+  const ProfileView({super.key, required this.homeViewContentState});
 
   @override
   Widget build(BuildContext context) {
+    
     return ChangeNotifierProvider(
       create: (_) => ProfileViewModel(),
-      child: ProfileViewContent(),
+      child: ProfileViewContent(homeViewContentState: homeViewContentState),
     );
   }
 }
 
 class ProfileViewContent extends StatefulWidget {
+  final HomeViewContentState homeViewContentState;
+  const ProfileViewContent({super.key, required this.homeViewContentState});
+
   @override
   State<ProfileViewContent> createState() => ProfileViewState();
 }
@@ -123,8 +129,8 @@ class ProfileViewState extends State<ProfileViewContent> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Padding(
-          padding: const EdgeInsets.only(
-            top: 40,
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top+ 10,
             left: 20,
             right: 20,
             bottom: 20,
@@ -138,7 +144,8 @@ class ProfileViewState extends State<ProfileViewContent> {
                   user: _user,
                   showHomeIcon: true,
                   showLogoutIcon: true,
-                  showNotiIcon: true
+                  showNotiIcon: true,
+                  homeViewContentState: widget.homeViewContentState,
                 ),
                 const SizedBox(height: 20),
                 Container(

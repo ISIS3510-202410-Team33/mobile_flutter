@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/services.dart' show RootIsolateToken, rootBundle;
 import 'package:ventura_front/services/repositories/gps_repository.dart';
@@ -18,12 +19,14 @@ class LocationsViewModel extends EventViewModel {
   late LocationRepository _repository;
   factory LocationsViewModel() => _instance;
   Map<String, LocationModel> locations = {};
+  Map<String, LocationModel> locationsBase = {};
+
   int updatings = 0;
-  bool firstTime = true;
 
   LocationsViewModel._internal(){
     _repository = LocationRepository();
-    
+    _loadCacheInfo();
+  
   }
 
   String getSite(String type){
@@ -37,9 +40,11 @@ class LocationsViewModel extends EventViewModel {
       double distance = gps.getDistanceLatLon(location.latitude, location.longitude);
       distances.putIfAbsent(key, () => distance);
     }
-    distances.entries.toList().sort(((a, b) => a.key.compareTo(b.key)));
 
-    for (var key in distances.keys) {
+    List<String> sortedIndices = getSortedIndex(distances);
+    print(sortedIndices.toString());
+
+    for (var key in sortedIndices) {
       LocationModel location = locationsCopy[key]!;
       if (type == "green_areas" && location.greenAreas > 0){
         return location.id.toString();
@@ -52,12 +57,30 @@ class LocationsViewModel extends EventViewModel {
     return distances.entries.first.key;
     
   }
+
+  List<String> getSortedIndex(Map<String, double> distances){
+    List<MapEntry<String, double>> entries = distances.entries.toList();
+    entries.sort((a, b) => a.value.compareTo(b.value));
+    List<String> sortedIndices = entries.map((entry) => entry.key).toList();
+    return sortedIndices;
+  }
   
 
-  void getLocationsInitial(){
+  void getLocations(){
     notify(LoadingEvent(isLoading: true));
     if (locations.isEmpty) {
-      rootBundle.loadString('lib/data/initial-locations.json').then((value) {
+      getLocationsCache();
+    }
+    else {
+      notify(LocationsLoadedEvent(success: true));
+      notify(LoadingEvent(isLoading: false));
+
+    }
+
+  }
+
+  void getLocationsCache(){
+    rootBundle.loadString('lib/data/initial-locations.json').then((value) {
         final decodejson = jsonDecode(value);
         for (var key in decodejson) {
           final location = LocationModel(
@@ -72,44 +95,68 @@ class LocationsViewModel extends EventViewModel {
             );
           locations.putIfAbsent(key['id'].toString(), () => location);
         };
+        locationsBase = locations;
         notify(LoadingEvent(isLoading: false));
         notify(LocationsLoadedEvent( success: true));
       }).catchError((error){
         notify(LoadingEvent(isLoading: false));
         notify(LocationsLoadedEvent(success: false));
       });
-    }
-    else {
-      notify(LocationsLoadedEvent(success: true));
-      notify(LoadingEvent(isLoading: false));
-
-    }
-
   }
 
   void updateLocationFrequency(userId, locationId ) {
-    final defaultModel = UserLocationModel(id: -1, collegeLocation: -1, frequency: -1, user: -1 );
+
     _repository.updateLocationFrequency(userId, locationId).then(
       (value) {
-        if (value.statusCode == 200) {
-          final decodejson = jsonDecode(value.body);
-          notify(LocationFrequencyUpdateEvent(success: true, model: UserLocationModel.fromJson(decodejson)));
+        if (value.statusCode == 200 || value.statusCode == 201) {
+          notify(LocationFrequencyUpdateEvent(success: true));
         }
         else {
-          notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel));
+          notify(LocationFrequencyUpdateEvent(success: false));
         }
       }
     // ignore: invalid_return_type_for_catch_error
-    ).catchError((error) => {
-      notify(LocationFrequencyUpdateEvent(success: false, model: defaultModel))
+    ).catchError((error) {
+      print(error.toString());
+      notify(LocationFrequencyUpdateEvent(success: false));
+      return null;
     });
   }
 
-  void updateRecommendedLocations(userId) async{
-    List<String> cache = await _repository.getRecommendedLocations();
-    recommendedList = cache;
-    if (recommendedList.isNotEmpty){
-      print("Cache acccedido");
+  String getBestRatedLocation(){
+    return bestRated;
+  }
+
+  void updateBestRatedLocation(){
+    _repository.getBestRatedLocationsNet().then((value) {
+      final decodejson = jsonDecode(value.body);
+      if (decodejson.length > 0) {  
+        bestRated = decodejson[0]['id'].toString();
+        LocationModel locationBestRated = locations[bestRated]!;
+        locationBestRated.bestRated = true;
+        locations.update(bestRated, (value) => locationBestRated);
+        _repository.saveBestRatedLocationCache(bestRated).then((value) {
+          if (value ){
+            print("Mejor valorado guardado en cache");
+          }
+          else{
+            print("Error guardando mejor valorado en cache");
+          }
+        });
+        notify(UpdateBestRatedLocationsEvent(success: true));
+      }
+      else{
+        notify(UpdateBestRatedLocationsEvent(success: false));
+      }
+    }).catchError((error){
+      notify(UpdateBestRatedLocationsEvent( success: false));
+    });
+  }
+
+  void updateRecommendedLocationsCache() async{
+    print("Actualizando recomendados desde cache");
+    if (recommendedList.isNotEmpty && updatings == 0){
+      locations = locationsBase;
       for (var locationId in recommendedList) {
         final location = locations[locationId];
         if (location != null){
@@ -119,11 +166,15 @@ class LocationsViewModel extends EventViewModel {
       }
       notify(UpdateRecommendedLocationsEvent(success: true, recommendedList: recommendedList));
     }
-    else{
-      _repository.getRecommendedLocationsFrequency(userId).then((value) {
+  }
+
+  void updateRecommendedLocationsNet(userId) async{
+    print("Actualizando recomendados desde internet");
+    _repository.getRecommendedLocationsNet(userId).then((value) {
         final decodejson = jsonDecode(value.body);
         print(decodejson);
         if (decodejson.length > 0) {  
+          locations = locationsBase;
 
           for (var key in decodejson) {
             final location = locations[key['id'].toString()];
@@ -135,23 +186,19 @@ class LocationsViewModel extends EventViewModel {
           }
           recommendedList = recommendedList.toSet().toList();
         }
-        _repository.saveRecommendedLocations(recommendedList).then((value) {
+        _repository.saveRecommendedLocationsCache(recommendedList).then((value) {
           if (value ){
             print("Recomendados guardados en cache");
           }
           else{
             print("Error guardando recomendados en cache");
           }
-        });
-          
+        });   
         notify(UpdateRecommendedLocationsEvent(success: true, recommendedList: recommendedList));
       }).catchError((error){
-        print("Erroooorrrr: " +  error.toString());
         notify(UpdateRecommendedLocationsEvent(success: false));
       });
-      }
-    }
-
+  }
 
 
   void loadLocations(int userId) {
@@ -173,7 +220,7 @@ class LocationsViewModel extends EventViewModel {
           );
         locations.putIfAbsent(key['id'].toString(), () => location);
       };
-      return _repository.getRecommendedLocationsFrequency(userId);
+      return _repository.getRecommendedLocationsNet(userId);
       
     // ignore: invalid_return_type_for_catch_error
     }).then((value) {
@@ -187,6 +234,7 @@ class LocationsViewModel extends EventViewModel {
           }
         }
       }
+      _repository.replaceJsonFile(locations);
       notify(LocationsLoadedEvent( success: true));
     
     })
@@ -195,12 +243,18 @@ class LocationsViewModel extends EventViewModel {
     });
   }
 
-  void getRecommendedLocationsCache(){
-    _repository.getRecommendedLocations().then((value) {
+  void _loadCacheInfo(){
+    _repository.getRecommendedLocationsCache().then((value) {
       print("Cache de recomendaciones cargado");
       recommendedList = value;
     }).catchError((error){
       recommendedList = [];
+    });
+    _repository.getBestRatedLocationCache().then((value) {
+      print("Cache de mejor valorado cargado");
+      bestRated = value;
+    }).catchError((error){
+      bestRated = "";
     });
   }
 
@@ -228,8 +282,7 @@ class LocationsLoadedEvent extends ViewEvent {
 
 class LocationFrequencyUpdateEvent extends ViewEvent {
   bool success;
-  UserLocationModel model;
-  LocationFrequencyUpdateEvent({required this.success, required this.model}):super("LocationFrequencyUpdateEvent");
+  LocationFrequencyUpdateEvent({required this.success}):super("LocationFrequencyUpdateEvent");
 }
 
 class LocationsUpdateRecommendendEvent extends ViewEvent {
@@ -245,9 +298,8 @@ class UpdateRecommendedLocationsEvent extends ViewEvent {
 }
 
 class UpdateBestRatedLocationsEvent extends ViewEvent {
-  final bool loading;
   final bool success;
-  UpdateBestRatedLocationsEvent({required this.success, required this.loading}):super("UpdateBestRatedLocationsEvent");
+  UpdateBestRatedLocationsEvent({required this.success}):super("UpdateBestRatedLocationsEvent");
 }
 
 

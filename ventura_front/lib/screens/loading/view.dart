@@ -24,16 +24,15 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
   @override
   void initState() {
     super.initState();
-    print("New Loading view");
     _viewModel.subscribe(this);
     _connectionViewModel.subscribe(this);
+    _connectionViewModel.isInternetConnected().then((value) {
+      if (value){
+        _viewModel.getCredentials();
+      }
+    });
   }
 
-   @override
-  void dispose() {
-    _connectionViewModel.unsubscribe(this);
-    _viewModel.unsubscribe(this);
-  }
   @override
   void notify(ViewEvent event) {  
 
@@ -45,13 +44,14 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
       );
     } 
     else if (event is SignInFailedEvent) {
+      
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
-      
     }
+    
     else if (event is ConnectionEvent) {
       print("Connection state: ${event.connection ? 'Connected' : 'Disconnected'}");
       if (event.connection) {
@@ -63,7 +63,6 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
           _viewModel.getCredentials();
         }
       } else {
-
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const LoadingNoConnectionView(), // Reemplaza LoginView() con la pantalla siguiente

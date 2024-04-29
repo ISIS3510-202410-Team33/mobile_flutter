@@ -18,8 +18,6 @@ class ConnectionViewModel extends EventViewModel {
 
   ConnectionViewModel._internal() {
     _receivePort = ReceivePort();
-
-    
     _startInternetCheckIsolate();
   }
 
@@ -32,15 +30,15 @@ class ConnectionViewModel extends EventViewModel {
     _receivePort.listen((dynamic data) {
       if (_started) {
         if (_isConnected != data) {
+          print("Cambio conexion: ${data ? 'Conectado' : 'Desconectado'}");
           spreadConnectionState(data);
         }
-        _isConnected = data;
       }
       else {
-        _isConnected = data;
-        _started = true;
         spreadConnectionState(data);
       }
+      _started = true;
+      _isConnected = data;
     });
   }
 
@@ -65,6 +63,12 @@ class ConnectionViewModel extends EventViewModel {
     }  catch (_) {
       return false;
     }
+  }
+
+  //Llamar este metodo para verificar si hay conexión a internet, de manera independiente al isolate.
+  Future<bool> isInternetConnected() async {
+    bool value = await _checkInternetConnection();
+    return value;
   }
 
   bool isConnected() {

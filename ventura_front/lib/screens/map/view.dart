@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter/widgets.dart";
 import "package:geolocator/geolocator.dart";
+import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 import "package:provider/provider.dart";
@@ -20,22 +21,27 @@ import 'package:ventura_front/screens/map/components/rateIcon_component.dart';
 
 
 class MapView extends StatelessWidget {
-  const MapView({super.key});
+  final HomeViewContentState homeViewContentState;
+  const MapView({super.key, required this.homeViewContentState});
 
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ProfileViewModel(),
-      child: const MapViewContent(),
+      child: MapViewContent(homeViewContentState: homeViewContentState),
     );
   }
+
+  
   
   
 }
 
 class MapViewContent extends StatefulWidget {
-  const MapViewContent({super.key});
+
+  final HomeViewContentState homeViewContentState;
+  const MapViewContent({super.key, required this.homeViewContentState});
 
   @override
   State<MapViewContent> createState() => MapViewState();
@@ -49,15 +55,17 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   final LocationsViewModel _viewModel = LocationsViewModel();
   late ProfileViewModel profileViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
+
+  bool _hasConnection = true;
+
   bool _isLoading = true;
   List<Widget> locationWidgets = [];
   int pasosHoy = 0;
   int caloriasHoy = 0;
-  bool showSitesButtons = true;
   bool showAllLocationsButton = false;
 
   final UserModel user = UserViewModel().user;
-  bool showNoInternetWidget = false;
+
 
   void getPosition() async {
     try {
@@ -83,18 +91,28 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   void initState() {
     super.initState();
     getPosition();
-    _connectionViewModel.subscribe(this);
+    madeConnection();
+  }
+
+  void madeConnection() {
+    print("Map View made connection");
+
     _viewModel.subscribe(this);
-
-    if(_viewModel.locations.isEmpty){
-        print("Cargando loc desde 0");
-        _viewModel.getLocationsInitial();
-    }
-    else {
-      print("Cargando locs ya cargados");
-      notify(LocationsLoadedEvent(success: true));
-    }
-
+    _connectionViewModel.subscribe(this);
+    _viewModel.getLocations();
+    _connectionViewModel.isInternetConnected().then((value) {
+      setState(() {
+        _hasConnection = value;
+      });
+      if(value){
+        _viewModel.updateBestRatedLocation();
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      }
+      else{
+        _viewModel.updateRecommendedLocationsCache();
+        notify(ConnectionEvent(connection: false));
+      }
+    });
   }
 
   @override
@@ -113,20 +131,19 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       });
     } else if (event is LocationsLoadedEvent) {
       if (event.success){
-          locationWidgets = getUpdatedLocationsList();
+          if (_hasConnection && _viewModel.updatings > 0){
+            print("Actualizando por red - pidiendo recomendados");
+            _viewModel.updateRecommendedLocationsNet(user.id);
+            _viewModel.updatings = 0;
+          }
+          else {
+            print("Actualizando por cache - pidiendo recomendados");
+            _viewModel.updateRecommendedLocationsCache();
+          }
           setState(() {
+            locationWidgets = getUpdatedLocationsList();
             _isLoading = false;
           });
-          if (_connectionViewModel.isConnected() && _viewModel.firstTime){
-            print("First time - pidiendo recomendados");
-            _viewModel.firstTime = false;
-            _viewModel.updateRecommendedLocations(user.id);
-          }
-          else if (_connectionViewModel.isConnected() && _viewModel.updatings > 0){
-            print("Hay actualizaciones pendientes - pidiendo recomendados");
-            _viewModel.updatings = 0;
-            _viewModel.updateRecommendedLocations(user.id);
-          }
       }
       else {
         locationWidgets = [const Text("Error loading locations")];
@@ -151,24 +168,41 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         }
       }
       else if (event is ConnectionEvent) {
+        setState(() {
+          _hasConnection = event.connection;
+          locationWidgets = getUpdatedLocationsList();
+        });
         if (event.connection) {
-          if (showNoInternetWidget) {
-            setState(() {
-              showNoInternetWidget = false;
-              showSitesButtons = true;
-            });
-            if (_viewModel.updatings > 0){
-              _viewModel.updateRecommendedLocations(user.id);
-            }
-          }
-        } else {
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Internet connection restored"),
+              duration: Duration(seconds: 3),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        else {
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("No internet connection"),
+              duration: Duration(days: 1),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else if (event is UpdateBestRatedLocationsEvent) {
+        if (event.success) {
           setState(() {
-            showSitesButtons = false;
-            showNoInternetWidget = true;
-          });
+            locationWidgets = getUpdatedLocationsList();
+          },);
+          print("Best rated location updated");
+        } else {
+          print("Error updating best rated location");
         }
       }
-  }
+    }
 
 
 
@@ -206,8 +240,29 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     }
   }
 
+  List<Widget> getBestRatedWidget(location){
+    List<Widget> widgets = [];
+    if (location.bestRated ?? false) {
+      widgets.add(const Icon(Icons.star, color: Colors.yellow, size: 30));
+      widgets.add(const SizedBox(width: 10));
+      widgets.add(const Text("Best rated location",
+          style: TextStyle(color: Colors.white, fontSize: 14)));
+      widgets.add(const Spacer());
+      return widgets;
+    } else {
+      return [];
+    }
+  }
+
   void restart(){
-    _viewModel.getLocationsInitial();
+    _viewModel.getLocationsCache();
+    if (_hasConnection){
+      _viewModel.updateRecommendedLocationsNet(user.id);
+      _viewModel.updateBestRatedLocation();
+    }
+    else{
+      _viewModel.updateRecommendedLocationsCache();
+    }
   }
 
   void paintOneLocationById(String id){
@@ -237,6 +292,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
               // Aqui se agregan las recomendaciones si hay
               children: [
                 Row(children: getRecommendedWidget(location)),
+                Row(children: getBestRatedWidget(location)),
+                
               ],
             ),
             Row(
@@ -254,7 +311,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                   children: [
                     TextButton(
                         onPressed: () {
-                          if (_connectionViewModel.isConnected()){
+                          if (_hasConnection){
                             addCalorias(gps.getDistanceLatLon(
                                 location.latitude, location.longitude));
                             addPasos(gps.getDistanceLatLon(
@@ -263,6 +320,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                                 location.latitude, location.longitude);
                             _viewModel.updateLocationFrequency(user.id, location.id);
                             _viewModel.updatings++;
+                            _viewModel.updateRecommendedLocationsNet(user.id);
                           } 
                           else{
                             showDialog(
@@ -376,7 +434,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
               alignment: Alignment.centerLeft,
               child: GestureDetector(
                 onTap: () {
-                  if(_connectionViewModel.isConnected()){
+                  if(_hasConnection){
                     showDialog(
                       context: context,
                       builder: (context) {
@@ -446,8 +504,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: Padding(
-              padding: const EdgeInsets.only(
-                  top: 40, left: 20, right: 20, bottom: 20),
+              padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 10, left: 20, right: 20, bottom: 20),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 //header of the app
@@ -457,29 +515,10 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                     user: user,
                     showHomeIcon: true,
                     showLogoutIcon: false,
-                    showNotiIcon: false
+                    showNotiIcon: false,
+                    homeViewContentState: widget.homeViewContentState,
                   ),
-                  showNoInternetWidget
-                      ? const Padding(
-                        padding: EdgeInsets.only(left: 20, right: 20),
-                        child: Column(                          
-                          children: [
-                            SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                              Icon(Icons.wifi_off, color: Colors.white, size: 30),
-                              SizedBox(width: 10),
-                              Text("No internet connection",
-                                  style: TextStyle(color: Colors.white, fontSize: 16))
-                            ]),
-                            SizedBox(height: 10),
-                          ],
-                        ),
-                          
-                      )
-                      : const SizedBox(),
-                  showSitesButtons
+                  _hasConnection
                       ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -494,7 +533,6 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                             ElevatedButton(
                               onPressed: () {
                                 paintOneLocationById(_viewModel.getSite("green_areas"));
-
                               },
                               child: const Text("Search Green Zone"),
                             ),
@@ -511,7 +549,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                           
                         ),
                         const SizedBox(height: 20),
-                        showAllLocationsButton
+                        showAllLocationsButton && _hasConnection
                             ? ElevatedButton(
                                 onPressed: () {
                                   (setState( () => showAllLocationsButton = false));

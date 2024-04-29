@@ -4,15 +4,9 @@ abstract class EventViewModel {
   final List<EventObserver> observerList = List.empty(growable: true);
   bool _isSuscribing = false;
 
-  void subscribe(EventObserver o) {
-    _isSuscribing = true;
-    if (observerList.contains(o)) return;
-    observerList.add(o);
-    _isSuscribing = false;
-  }
-
-  void unsubscribeAll() {
+  void subscribe(EventObserver o){
     observerList.clear();
+    observerList.add(o);
   }
 
   bool isSuscribed(EventObserver o) {

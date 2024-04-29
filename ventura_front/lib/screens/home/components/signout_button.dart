@@ -1,27 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:ventura_front/mvvm_components/observer.dart';
 import 'package:ventura_front/screens/login/view.dart';
-import 'package:ventura_front/services/repositories/user_repository.dart';
+import 'package:ventura_front/services/repositories/locations_repository.dart';
+import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/user_viewModel.dart';
 
-class SignOutComponent extends StatefulWidget {
-  const SignOutComponent({super.key});
-  @override
-  State<SignOutComponent> createState() => SignOutComponentState();
-}
-
-class SignOutComponentState extends State<SignOutComponent> implements EventObserver {
+class SignOutComponent extends StatelessWidget {
 
   static final UserViewModel _userViewModel = UserViewModel();
-
-  @override
-  void initState() {
-    super.initState();
-    _userViewModel.subscribe(this);
-  }
+  static final ConnectionViewModel  _connectionViewModel = ConnectionViewModel();
+  static final LocationRepository _locationsRepository = LocationRepository();
 
   @override
   Widget build(BuildContext context) {
+    bool isLoading = false;
     return Container(
         width: 50,
         height: 50,
@@ -37,20 +28,19 @@ class SignOutComponentState extends State<SignOutComponent> implements EventObse
           children: [
             IconButton(
               icon: const Icon(Icons.logout, color: Colors.white),
-              onPressed: () {
+              onPressed: !isLoading && _connectionViewModel.isConnected() ? () {
                 _userViewModel.signOut();
-              },
+                isLoading = true;
+                _locationsRepository.cleanCache();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
+                  ),
+                );
+              } : null,
             )
           ],
         ));
   }
 
-  @override
-  void notify(ViewEvent event) {
-    if (event is SignOutEvent && event.success) {
-      print("SignOutComponent: SignOutEvent: success");
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const LoginView()));
-    }
-  }
 }
