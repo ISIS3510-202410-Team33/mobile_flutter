@@ -1,20 +1,21 @@
 import 'observer.dart';
 
 abstract class EventViewModel {
-  final List<EventObserver> _observerList = List.empty(growable: true);
+  final List<EventObserver> observerList = List.empty(growable: true);
+  bool _isSuscribing = false;
 
-  void subscribe(EventObserver o) {
-    if (_observerList.contains(o)) return;
-    _observerList.add(o);
+  void subscribe(EventObserver o){
+    observerList.clear();
+    observerList.add(o);
   }
 
-  void unsubscribeAll() {
-    _observerList.clear();
+  bool isSuscribed(EventObserver o) {
+    return observerList.contains(o);
   }
 
   bool unsubscribe(EventObserver o) {
-    if (_observerList.contains(o)) {
-      _observerList.remove(o);
+    if (observerList.contains(o)) {
+      observerList.remove(o);
       return true;
     } else {
       return false;
@@ -22,8 +23,12 @@ abstract class EventViewModel {
   }
 
   void notify(ViewEvent event) {
-    for (var element in _observerList) {
-      element.notify(event);
+    for (EventObserver observer in observerList) {
+      observer.notify(event);
     }
+  }
+
+  bool isSuscribing() {
+    return _isSuscribing;
   }
 }

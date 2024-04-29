@@ -71,11 +71,6 @@ class NotificationViewModel extends EventViewModel {
     notify(NotificationEvent(hasNotification: state));
   }
 
-  @override
-  void subscribe(EventObserver o) {
-    unsubscribeAll();
-    super.subscribe(o);
-  }
 }
 
 class NotificationEvent extends ViewEvent {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:ventura_front/mvvm_components/observer.dart';
-import 'package:ventura_front/services/repositories/user_repository.dart';
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/user_viewModel.dart';
 import 'package:ventura_front/services/view_models/weather_viewmodel.dart';
@@ -12,7 +11,6 @@ import './components/university_component.dart';
 import './components/options_component.dart';
 
 import '../../services/models/user_model.dart';
-import '../../services/models/weather_model.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -21,21 +19,26 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => WeatherViewModel(),
-      child: HomeViewContent(),
+      child: const HomeViewContent(),
     );
   }
 }
 
 class HomeViewContent extends StatefulWidget {
+  const HomeViewContent({super.key});
+
   @override
   State<HomeViewContent> createState() => HomeViewContentState();
 }
 
 class HomeViewContentState extends State<HomeViewContent>
     implements EventObserver {
+
   Position? position;
   late WeatherViewModel weatherViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
+
+  bool _hasConnection = true;
   static final UserViewModel _userViewModel = UserViewModel();
   final UserModel _user = _userViewModel.user;
 
@@ -66,11 +69,32 @@ class HomeViewContentState extends State<HomeViewContent>
   void initState() {
     super.initState();
     getCurrentLocation();
+    madeConnection();
+  }
+
+  void madeConnection() {
+    print("Home view made connection");
     _connectionViewModel.subscribe(this);
+    _userViewModel.subscribe(this);
+    _connectionViewModel.isInternetConnected().then((value) {
+      setState(() {
+        _hasConnection = value;
+        if (weatherViewModel.weatherData != null) {
+            weatherViewModel.weatherData!.signal = _hasConnection;
+          }
+      });
+      if(value){
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      }
+      else{
+        notify(ConnectionEvent(connection: false));
+      }
+    });
   }
 
   @override
   void dispose() {
+    _userViewModel.unsubscribe(this);
     _connectionViewModel.unsubscribe(this);
     super.dispose();
   }
@@ -88,8 +112,8 @@ class HomeViewContentState extends State<HomeViewContent>
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Padding(
-          padding: const EdgeInsets.only(
-            top: 40,
+          padding:  EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top + 10,
             left: 20,
             right: 20,
             bottom: 20,
@@ -103,6 +127,7 @@ class HomeViewContentState extends State<HomeViewContent>
                 showHomeIcon: false,
                 showLogoutIcon: true,
                 showNotiIcon: true,
+                homeViewContentState: this,
               ),
               const SizedBox(height: 20),
               Consumer<WeatherViewModel>(
@@ -113,14 +138,14 @@ class HomeViewContentState extends State<HomeViewContent>
                       weather: weatherData,
                     );
                   } else {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               const University(),
               const SizedBox(height: 10),
-              const Options(),
+              Options( homeViewContentState: this,),
             ],
           ),
         ),
@@ -131,8 +156,19 @@ class HomeViewContentState extends State<HomeViewContent>
   @override
   void notify(ViewEvent event) {
     if (event is ConnectionEvent) {
+      setState(() {
+        _hasConnection = event.connection;
+      });
       if (event.connection) {
         print("Conexión establecida");
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(seconds: 3),
+            backgroundColor: Colors.green,
+            content: Text('You are connected again'),
+          ),
+        );
         setState(() {
           if (weatherViewModel.weatherData != null) {
             weatherViewModel.weatherData!.signal = true;
@@ -140,6 +176,14 @@ class HomeViewContentState extends State<HomeViewContent>
         });
       } else {
         print("Conexión perdida");
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(days: 1),
+            backgroundColor: Colors.red,
+            content: Text('You can\'t log in because you don\'t have connection'),
+          ),
+        );
         setState(() {
           weatherViewModel.weatherData!.signal = false;
         });

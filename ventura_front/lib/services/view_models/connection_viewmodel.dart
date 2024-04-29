@@ -11,19 +11,14 @@ class ConnectionViewModel extends EventViewModel {
   late ReceivePort _receivePort;
   late Isolate _isolate;
   bool _started = false;
-  bool firstTime = true;
 
   factory ConnectionViewModel() {
     return _instance;
   }
 
   ConnectionViewModel._internal() {
-    print("New ConnectionViewModel");
-    if (_started == false) {
-      print("Starting ConnectionViewModel");
-      _receivePort = ReceivePort();
-      _startInternetCheckIsolate();
-    }
+    _receivePort = ReceivePort();
+    _startInternetCheckIsolate();
   }
 
   void _startInternetCheckIsolate() async {
@@ -35,24 +30,22 @@ class ConnectionViewModel extends EventViewModel {
     _receivePort.listen((dynamic data) {
       if (_started) {
         if (_isConnected != data) {
+          print("Cambio conexion: ${data ? 'Conectado' : 'Desconectado'}");
           spreadConnectionState(data);
         }
       }
-      if (firstTime) {
+      else {
         spreadConnectionState(data);
-        firstTime = false;
       }
-      _isConnected = data;
       _started = true;
+      _isConnected = data;
     });
   }
 
   // Método que se ejecutará en el Isolate.
   static void _checkInternetIsolate(SendPort sendPort) {
-    int counter = 0;
-    Timer.periodic(Duration(seconds: counter), (timer) async {
+    Timer.periodic(const Duration(seconds: 1), (timer) async {
       bool isConnected = await _checkInternetConnection();
-      counter = 1;
       sendPort.send(isConnected);
     });
   }
@@ -60,7 +53,8 @@ class ConnectionViewModel extends EventViewModel {
   // Método para verificar la conexión a Internet.
   static Future<bool> _checkInternetConnection() async {
     try {
-      final result = await InternetAddress.lookup("ventura-backend-jaj1.onrender.com");
+      final result = await InternetAddress.lookup("google.com").timeout(const Duration(seconds: 3));
+    
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
       } else {
@@ -69,6 +63,12 @@ class ConnectionViewModel extends EventViewModel {
     }  catch (_) {
       return false;
     }
+  }
+
+  //Llamar este metodo para verificar si hay conexión a internet, de manera independiente al isolate.
+  Future<bool> isInternetConnected() async {
+    bool value = await _checkInternetConnection();
+    return value;
   }
 
   bool isConnected() {
@@ -81,7 +81,7 @@ class ConnectionViewModel extends EventViewModel {
   }
 
   void spreadConnectionState(bool state) {
-    notify(ConnectionEvent(connection: state));
+    !isSuscribing() ? notify(ConnectionEvent(connection: state)) : null;
   }
 }
 

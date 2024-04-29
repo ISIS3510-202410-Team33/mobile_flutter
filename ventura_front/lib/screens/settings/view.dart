@@ -16,7 +16,12 @@ class SettingsView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            bottom: 20,
+          ),
             child: Text(
               'Preferences',
               style: TextStyle(

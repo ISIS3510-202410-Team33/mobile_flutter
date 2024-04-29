@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ventura_front/screens/home/components/notifications_button.dart';
 import 'package:ventura_front/screens/home/view.dart';
+import 'package:ventura_front/screens/notifications/view.dart';
 import 'package:ventura_front/services/models/user_model.dart';
 import 'package:ventura_front/screens/home/components/signout_button.dart';
+import 'package:ventura_front/services/repositories/locations_repository.dart';
 
 class Header extends StatelessWidget {
   final bool showUserInfo;
@@ -10,13 +11,15 @@ class Header extends StatelessWidget {
   final bool showLogoutIcon;
   final bool showNotiIcon;  
   final UserModel user;
+  final HomeViewContentState homeViewContentState;
   const Header(
       {super.key,
       required this.showUserInfo,
       required this.user,
       required this.showHomeIcon,
       required this.showLogoutIcon,
-      required this.showNotiIcon});
+      required this.showNotiIcon,
+      required this.homeViewContentState});
 
   String actualDate() {
     DateTime now = DateTime.now();
@@ -62,9 +65,13 @@ class Header extends StatelessWidget {
     }
   }
 
+  
+
   Widget getHomeIcon(BuildContext context) {
     if (showHomeIcon) {
-      return Container(
+      return Row(children: [
+        const SizedBox(width: 20),
+        Container(
           width: 50,
           height: 50,
           decoration: BoxDecoration(
@@ -79,12 +86,13 @@ class Header extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.home_filled, color: Colors.white),
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
                 },
               )
             ],
-          ));
+          ))
+      ],);
     } else {
       return Container();
     }
@@ -92,15 +100,45 @@ class Header extends StatelessWidget {
 
   Widget getLogoutIcon() {
     if (showLogoutIcon) {
-      return const SignOutComponent();
+      return Row(children: [
+        const SizedBox(width: 20),
+        SignOutComponent()
+      ],);
     } else {
       return Container();
     }
   }
 
-  Widget getNotiIcon() {
+
+  Widget getNotiIcon(BuildContext context) {
     if (showNotiIcon) {
-      return const NotificationComponent();
+      return Row(children: [
+        const SizedBox(width: 20),
+        Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1C1F22), Color(0xFF2F353A)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            )),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.white),
+              onPressed: ()  async {
+                await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const NotificationView()));
+                homeViewContentState.madeConnection();
+                
+              },
+            )
+          ],
+        ))
+      ],);
     } else {
       return Container();
     }
@@ -113,11 +151,12 @@ class Header extends StatelessWidget {
       children: [
         getUserWidget(),
         const Spacer(),
-        getLogoutIcon(),
-        const SizedBox(width: 20),
-        getHomeIcon(context),
-        getNotiIcon(),
-        const SizedBox(width: 20),
+        Row(
+          children: [
+          getLogoutIcon(),
+          getHomeIcon(context),
+          getNotiIcon(context),
+        ],)
       ],
     );
   }

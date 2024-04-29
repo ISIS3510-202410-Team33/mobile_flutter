@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/screens/home/view.dart';
 import './ButtonElement.dart';
 
 class Options extends StatefulWidget {
-  const Options({super.key});
+  final HomeViewContentState homeViewContentState;
+  const Options({super.key, required this.homeViewContentState});
 
   @override
   State<Options> createState() => OptionsState();
@@ -46,6 +48,7 @@ class OptionsState extends State<Options> {
                   iconData: element.icon, 
                   title: element.name, 
                   description: element.description,
+                  homeViewContentState: widget.homeViewContentState,
                   ),
               )
       );

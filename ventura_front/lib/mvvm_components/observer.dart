@@ -1,6 +1,5 @@
 abstract class EventObserver {
   void notify(ViewEvent event);
-
 }
 
 abstract class ViewEvent {

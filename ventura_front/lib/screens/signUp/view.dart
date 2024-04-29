@@ -3,6 +3,7 @@ import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
+import "package:ventura_front/screens/login/view.dart";
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
@@ -20,32 +21,74 @@ class  SignUpView extends StatefulWidget {
 class SignUpViewState extends State<SignUpView> implements EventObserver{
 
   final UserViewModel _viewModel = UserViewModel();
-  bool _isLoading = true;
-  bool _hasConnection = true;
+  bool _isLoading = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _hasConnection = true;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
  
   @override
   void initState() {
+    print("Sign up init");
     super.initState();
+    madeConnection();
+  }
+
+  void madeConnection() {
     _viewModel.subscribe(this);
     _connectionViewModel.subscribe(this);
+    _connectionViewModel.isInternetConnected().then((value) {
+      setState(() {
+        _hasConnection = value;
+      });
+      if(value){
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      }
+      else {
+        notify(ConnectionEvent(connection: false));
+      }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     _viewModel.unsubscribe(this);
+    _connectionViewModel.unsubscribe(this);
+    
   }
 
   @override
   void notify(ViewEvent event) {  
 
     if (event is ConnectionEvent) {
-    setState(() {
-      _hasConnection = event.connection; // Actualiza el estado de la conexión
-    });
+      setState(() {
+        _hasConnection = event.connection;
+      });
+      if (event.connection){
+        print("Conexión establecida sign up");
+        // Conexión restablecida, mostrar mensaje en verde
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 3),
+          backgroundColor: Colors.green,
+          content: Text('You are connected again'),
+        ),
+      );
+      }
+      else {
+        print("Conexión perdida sign up");
+        // Conexión perdida, mostrar mensaje en rojo
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          duration: Duration(days: 1),
+          backgroundColor: Colors.red,
+          content: Text('You can\'t sign up because you don\'t have connection'),
+        ),
+      );
+      }
     }
     if (event is LoadingUserEvent) {
       setState(() {
@@ -73,7 +116,9 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
           content: const Text("Please enter valid email and password"),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.pop(context, "Ok"),
+              onPressed: () {
+                Navigator.pop(context, 'Ok');
+              },
               child: const Text("Ok"),
             )
           ],
@@ -94,28 +139,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
         ),
       );
     }
-    if (event is ConnectionEvent) {
-      if (event.connection){
-        print("Conexión establecida");
-        // Conexión restablecida, mostrar mensaje en verde
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.green,
-          content: Text('You are connected again'),
-        ),
-      );
-      }
-      else {
-        print("Conexión perdida");
-        // Conexión perdida, mostrar mensaje en rojo
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('You can\'t sign up because you don\'t have connection'),
-        ),
-      );
-      }
-    }
+    
 
   }
 
@@ -125,17 +149,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    return WillPopScope(
-      onWillPop: () async {
-        if (! _hasConnection) {
-          // Si no hay conexión, evita el retroceso
-          return false;
-        } else {
-          // Si hay conexión, permite el retroceso
-          return true;
-        }
-      },
-      child: Container(
+    return Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           image: DecorationImage(
@@ -158,21 +172,19 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                       children: [
                         Column(
                           children: [
-                            const SizedBox(
-                              height: 30,
+                            SizedBox(
+                              height: MediaQuery.of(context).padding.top,
                               width: double.infinity,
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20.0),
                               child: Row(
                                 children: [
-                                    _hasConnection
-                                      ? BackButton(
-                                          onPressed: () {
+                                      BackButton(
+                                          onPressed: () async {
                                             Navigator.pop(context);
                                           },
                                         )
-                                      : SizedBox(),
                                 ],
                               ),
                             )
@@ -187,7 +199,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                             image: DecorationImage(
                               image: AssetImage('lib/icons/gooseLogin.png'),
                               fit: BoxFit.scaleDown,
-                              alignment: Alignment.topLeft,
+                              alignment: Alignment.bottomLeft,
                             ),
                           ),
                           child: Padding(
@@ -289,7 +301,8 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                                           width: MediaQuery.of(context).size.width * 0.4,
                                           height: 50,
                                           child: ElevatedButton(
-                                            onPressed: _hasConnection
+
+                                            onPressed: _hasConnection && !_isLoading
                                                 ? () {
                                                     final email = emailController.text.trim();
                                                     final password = passwordController.text.trim();
@@ -297,7 +310,9 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
                                                   }
                                                 : null, // Desactiva el botón si no hay conexión
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.grey[700],
+                                              backgroundColor: _hasConnection && !_isLoading
+                                                  ? Colors.grey[700]
+                                                  : Colors.grey,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(30),
                                               ),
@@ -327,7 +342,6 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

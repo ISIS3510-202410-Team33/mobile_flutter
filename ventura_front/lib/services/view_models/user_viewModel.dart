@@ -23,13 +23,8 @@ class UserViewModel extends EventViewModel {
     _repository = UserRepository();
   }
 
-  @override
-  void subscribe(EventObserver o){
-    unsubscribeAll();
-    super.subscribe(o);
-  }
-
   void getCredentials(){
+    print("Looking for credentials");
     notify(LoadingUserEvent(isLoading: true));
     User? userCred = _repository.getCredentials();
     if (userCred != null) {
@@ -41,15 +36,15 @@ class UserViewModel extends EventViewModel {
           notify(SignInSuccessEvent(user: userModel));
         }
         else{
-          notify(SignInFailedEvent(reason: "backend-not-found"));
+          notify(SignInFailedEvent(reason: "backend-notFound"));
         }
-      }).onError((error, stackTrace) { notify(GetUserEvent(success: false));});
+      }).onError((error, stackTrace) {notify(SignInFailedEvent(reason: "backend-error"));});
 
       notify(LoadingUserEvent(isLoading: false));
 
     } else {
       notify(LoadingUserEvent(isLoading: false));
-      notify(SignInFailedEvent(reason: "firebase-not-logged-in"));
+      notify(SignInFailedEvent(reason: "firebase-notLoggedIn"));
     }
     
   }
@@ -62,13 +57,13 @@ class UserViewModel extends EventViewModel {
     .then((value) {
       final decodejson = jsonDecode(value.body);
       if (decodejson.length == 0) {
-        print(value.body);
         notify(SignInFailedEvent(reason: "backend-not-found"));
         notify(LoadingUserEvent(isLoading: false));
         return;
       }
       UserModel userModel = UserModel.fromJson(decodejson[0]);
       user = userModel;
+
       print("UserViewModel: signIn: ${user}");
       notify(SignInSuccessEvent(user: user));
       notify(LoadingUserEvent(isLoading: false));

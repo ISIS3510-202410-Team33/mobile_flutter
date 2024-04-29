@@ -1,13 +1,10 @@
 import "package:flutter/material.dart";
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/signUp/view.dart";
-import "package:ventura_front/sensors_components/proximity_sensor.dart";
 
 import "../../mvvm_components/observer.dart";
-import "../../services/repositories/user_repository.dart";
 import "../../services/view_models/user_viewmodel.dart";
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 
@@ -21,7 +18,7 @@ class LoginView extends StatefulWidget {
 class LoginViewState extends State<LoginView> implements EventObserver{
 
   final UserViewModel _viewModel = UserViewModel();
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _hasConnection = true;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -29,24 +26,38 @@ class LoginViewState extends State<LoginView> implements EventObserver{
   
   @override
   void initState() {
+    print("login view init");
     super.initState();
-    _viewModel.subscribe(this);
-    _connectionViewModel.subscribe(this);
+    madeConnection();
   }
+
+  void madeConnection() {
+    _connectionViewModel.subscribe(this);
+    _viewModel.subscribe(this);
+    _connectionViewModel.isInternetConnected().then((value) {
+      setState(() {
+        _hasConnection = value;
+      });
+      if(value){
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      }
+      else{
+        notify(ConnectionEvent(connection: false));
+      }
+    });
+  }
+
+
 
   @override
   void dispose() {
     super.dispose();
     _viewModel.unsubscribe(this);
+    _connectionViewModel.unsubscribe(this);
   }
 
   @override
   void notify(ViewEvent event) {  
-    if (event is ConnectionEvent) {
-    setState(() {
-      _hasConnection = event.connection; // Actualiza el estado de la conexión
-    });
-    }
     if (event is LoadingUserEvent) {
       setState(() {
         _isLoading = event.isLoading;
@@ -77,20 +88,28 @@ class LoginViewState extends State<LoginView> implements EventObserver{
     }
     if (event is ConnectionEvent) {
       if (event.connection){
-        print("Conexión establecida");
+        setState(()=> _hasConnection = true);
+        
+        print("Conexión establecida sign in");
         // Conexión restablecida, mostrar mensaje en verde
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 3),
           backgroundColor: Colors.green,
           content: Text('You are connected again'),
         ),
       );
       }
       else {
-        print("Conexión perdida");
+        setState(()=> _hasConnection = false);
+
+        print("Conexión perdida sign in");
         // Conexión perdida, mostrar mensaje en rojo
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
+          duration: Duration(days: 1),
           backgroundColor: Colors.red,
           content: Text('You can\'t log in because you don\'t have connection'),
         ),
@@ -129,19 +148,17 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                     children: [
                       Column(
                         children: [
-                          const SizedBox(
-                            height: 30,
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.top,
                             width: double.infinity,
                           ),
                           GestureDetector(
-                            onTap: _hasConnection
-                                ? () {
+                            onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (context) => const SignUpView()),
                                     );
-                                  }
-                                : null,
+                                  },
                             child: Text(
                               'First time using Ventura? Sign up here',
                               style: TextStyle(
@@ -156,13 +173,13 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                       Container(
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height * 0.7,
-                        alignment: Alignment.centerLeft,
+                        alignment: Alignment.bottomLeft,
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           image: DecorationImage(
                             image: AssetImage('lib/icons/gooseLogin.png'),
                             fit: BoxFit.scaleDown,
-                            alignment: Alignment.topLeft,
+                            alignment: Alignment.bottomLeft,
                           ),
                         ),
                         child: Padding(
@@ -257,7 +274,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                           width: MediaQuery.of(context).size.width * 0.3,
                                           height: 50,
                                           child: ElevatedButton(
-                                            onPressed: _hasConnection
+                                            onPressed: _hasConnection && !_isLoading
                                                 ? () {
                                                     final email = emailController.text.trim();
                                                     final password = passwordController.text.trim();
@@ -265,7 +282,9 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                                   }
                                                 : null, // Desactiva el botón si no hay conexión
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.grey[700],
+                                              backgroundColor: _hasConnection && !_isLoading
+                                                  ? Colors.grey[700]
+                                                  : Colors.grey,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(30),
                                               ),
@@ -283,14 +302,13 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                           width: MediaQuery.of(context).size.width * 0.3,
                                           height: 50,
                                           child: ElevatedButton(
-                                            onPressed: _hasConnection
-                                                ? () {
-                                                    Navigator.push(
-                                                        context,
-                                                    MaterialPageRoute(builder: (context) => const SignUpView()),
-                                                );
-                                                  }
-                                                : null, 
+                                            onPressed: () async {
+                                                  await Navigator.push(
+                                                      context,
+                                                  MaterialPageRoute(builder: (context) => const SignUpView()),
+                                                  );
+                                                  madeConnection();
+                                                },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.grey[700],
                                               shape: RoundedRectangleBorder(

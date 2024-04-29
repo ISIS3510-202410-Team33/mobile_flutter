@@ -1,8 +1,6 @@
 import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 import "../../mvvm_components/observer.dart";
-import "../../services/repositories/locations_repository.dart";
-import "../../services/view_models/locations_viewmodel.dart";
 
 class NotificationView extends StatefulWidget {
   const NotificationView({super.key});
@@ -16,9 +14,9 @@ class NotificationViewState extends State<NotificationView> implements EventObse
   Widget build(BuildContext context) { 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications'),
+        title: const Text('Notifications'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             // Lógica para regresar a la pantalla anterior
             Navigator.pop(context);
@@ -36,7 +34,7 @@ class NotificationViewState extends State<NotificationView> implements EventObse
         onTap: () {
           _launchURL(); // Llama a la función para abrir la URL al hacer clic
         },
-        child: Text(
+        child: const Text(
           "Your most recommended location is ML Building",
           style: TextStyle(
             fontSize: 24,
@@ -53,9 +51,9 @@ class NotificationViewState extends State<NotificationView> implements EventObse
   }
 
   _launchURL() async {
-  const url = 'https://campusinfo.uniandes.edu.co/es/recursos/edificios/bloqueml'; 
-  if (await canLaunch(url)) {
-    await launch(url);
+  final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/"); 
+  if (await canLaunchUrl(url)) {
+    await launchUrl(url);
   } else {
     throw 'Could not launch $url';
   }

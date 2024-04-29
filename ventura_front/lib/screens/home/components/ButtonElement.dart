@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/map/view.dart';
 import 'package:ventura_front/screens/profile/view.dart';
 import 'package:ventura_front/screens/settings/view.dart';
@@ -8,6 +9,7 @@ class MyButton extends StatelessWidget {
   final Color color;
   final String title;
   final String description;
+  final HomeViewContentState homeViewContentState;
 
   const MyButton({
     super.key,
@@ -15,23 +17,27 @@ class MyButton extends StatelessWidget {
     required this.color,
     required this.title,
     required this.description,
+    required this.homeViewContentState,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap: () {
+        onTap: () async {
           if (title == "Map") {
-            Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => const MapView()));
+            await Navigator.push(context, 
+                MaterialPageRoute(builder: (context) =>  MapView(homeViewContentState: homeViewContentState,)));
+                homeViewContentState.madeConnection();
           } else if (title == "Schedule") {
             print("Schedule");
           } else if (title == "Settings") {
-            Navigator.push(context,
+            await Navigator.push(context,
                 MaterialPageRoute(builder: (context) => SettingsView()));
+            homeViewContentState.madeConnection();
           } else if (title == "Profile") {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const ProfileView()));
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => ProfileView(homeViewContentState: homeViewContentState)));
+            homeViewContentState.madeConnection();
           }
         },
         child: Container(
