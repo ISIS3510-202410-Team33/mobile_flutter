@@ -2,13 +2,14 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
-import "package:ventura_front/screens/signUp/view.dart";
+import "package:ventura_front/screens/signup/view.dart";
+import "package:ventura_front/services/view_models/connection_viewmodel.dart";
+import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../mvvm_components/observer.dart";
-import "../../services/view_models/user_viewmodel.dart";
-import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 
-class LoginView extends StatefulWidget {
+
+class  LoginView extends StatefulWidget {
   const LoginView({super.key});
 
   @override
@@ -19,21 +20,21 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
   final UserViewModel _viewModel = UserViewModel();
   bool _isLoading = false;
-  bool _hasConnection = true;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _hasConnection = true;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
-  
+ 
   @override
   void initState() {
-    print("login view init");
+    print("Sign up init");
     super.initState();
     madeConnection();
   }
 
   void madeConnection() {
-    _connectionViewModel.subscribe(this);
     _viewModel.subscribe(this);
+    _connectionViewModel.subscribe(this);
     _connectionViewModel.isInternetConnected().then((value) {
       setState(() {
         _hasConnection = value;
@@ -41,56 +42,28 @@ class LoginViewState extends State<LoginView> implements EventObserver{
       if(value){
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
       }
-      else{
+      else {
         notify(ConnectionEvent(connection: false));
       }
     });
   }
-
-
 
   @override
   void dispose() {
     super.dispose();
     _viewModel.unsubscribe(this);
     _connectionViewModel.unsubscribe(this);
+    
   }
 
   @override
   void notify(ViewEvent event) {  
-    if (event is LoadingUserEvent) {
-      setState(() {
-        _isLoading = event.isLoading;
-      });
-    } else if (event is SignInSuccessEvent) {
 
-      print("Success");
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
-        ),
-      );
-    } else if (event is SignInFailedEvent) {
-      print("Failed");
-      showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text("Sign In Failed"),
-          content: const Text("Please check your email and password"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, "Ok"),
-              child: const Text("Ok"),
-            )
-          ],
-        ),
-      );
-    }
-    if (event is ConnectionEvent) {
+    if (event is ConnectionEvent && event.connection != _hasConnection) {
+      setState(() {
+        _hasConnection = event.connection;
+      });
       if (event.connection){
-        setState(()=> _hasConnection = true);
-        
-        print("Conexión establecida sign in");
         // Conexión restablecida, mostrar mensaje en verde
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -102,20 +75,45 @@ class LoginViewState extends State<LoginView> implements EventObserver{
       );
       }
       else {
-        setState(()=> _hasConnection = false);
-
-        print("Conexión perdida sign in");
-        // Conexión perdida, mostrar mensaje en rojo
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          duration: Duration(days: 1),
-          backgroundColor: Colors.red,
-          content: Text('You can\'t log in because you don\'t have connection'),
-        ),
-      );
+          const SnackBar(
+            duration: Duration(days: 1),
+            backgroundColor: Colors.red,
+            content: Text('You can\'t sign up because you don\'t have connection'),
+          ),
+        );
       }
     }
+    else if (event is LoadingUserEvent) {
+      setState(() {
+        _isLoading = event.isLoading;
+      });
+    } else if (event is SignInSuccessEvent) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
+        ),
+      );
+    } else if (event is SignInFailedEvent) {
+      showDialog<String>(
+
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text("Sign Up Failed"),
+          content: const Text("Please enter valid email and password"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, 'Ok');
+              },
+              child: const Text("Ok"),
+            )
+          ],
+        ),
+      );
+    }
+    
 
   }
 
@@ -126,222 +124,249 @@ class LoginViewState extends State<LoginView> implements EventObserver{
       DeviceOrientation.portraitDown,
     ]);
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        image: DecorationImage(
-          image: AssetImage('lib/icons/gooseLogin.png'),
-          fit: BoxFit.contain,
-          alignment: Alignment.bottomLeft,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          image: DecorationImage(
+            image: AssetImage('lib/icons/gooseLogin.png'),
+            fit: BoxFit.contain,
+            alignment: Alignment.bottomLeft,
+          ),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  height: MediaQuery.of(context).size.height,
-                  alignment: Alignment.bottomCenter,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).padding.top,
-                            width: double.infinity,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const SignUpView()),
-                                    );
-                                  },
-                            child: Text(
-                              'First time using Ventura? Sign up here',
-                              style: TextStyle(
-                                color: Colors.grey[800],
-                                fontSize: 18,
-                                decoration: TextDecoration.underline,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpView(), // Reemplaza LoginView() con la pantalla siguiente
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.7,
-                        alignment: Alignment.bottomLeft,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          image: DecorationImage(
-                            image: AssetImage('lib/icons/gooseLogin.png'),
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.bottomLeft,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            );
+                            madeConnection();
+                          },
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const SizedBox(
+                              SizedBox(
+                                height: MediaQuery.of(context).padding.top,
                                 width: double.infinity,
                               ),
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'Join us',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  Text("First time using ventura?", style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 20,
                                   ),
-                                  Text(
-                                    'using your',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
                                   ),
-                                  Text(
-                                    'college',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  SizedBox(width: 10,),
+                                  Text("Sign up here", style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 20,
+                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  Text(
-                                    'credentials',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
                                   ),
                                 ],
-                              ),
-                              const SizedBox(height: 28),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.65,
-                                child: Column(
+                              )
+                            ],),
+
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          alignment: Alignment.centerLeft,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            image: DecorationImage(
+                              image: AssetImage('lib/icons/gooseLogin.png'),
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.bottomLeft,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const SizedBox(
+                                  width: double.infinity,
+                                ),
+                                const Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    TextField(
-                                      controller: emailController,
-                                      textAlign: TextAlign.center,
-                                      decoration: InputDecoration(
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        hintText: 'Email',
-                                        hintStyle: const TextStyle(
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.w400),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(40),
-                                        ),
+                                    Text(
+                                      'Join us',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 20),
-                                    TextField(
-                                      controller: passwordController,
-                                      obscureText: true,
-                                      textAlign: TextAlign.center,
-                                      decoration: InputDecoration(
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        hintText: 'Password',
-                                        hintStyle: const TextStyle(
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.w400),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(40),
-                                        ),
+                                    Text(
+                                      'using your',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 40),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          width: MediaQuery.of(context).size.width * 0.3,
-                                          height: 50,
-                                          child: ElevatedButton(
-                                            onPressed: _hasConnection && !_isLoading
-                                                ? () {
-                                                    final email = emailController.text.trim();
-                                                    final password = passwordController.text.trim();
-                                                    _viewModel.signIn(email, password);
-                                                  }
-                                                : null, // Desactiva el botón si no hay conexión
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: _hasConnection && !_isLoading
-                                                  ? Colors.grey[700]
-                                                  : Colors.grey,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(30),
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              "Login",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: MediaQuery.of(context).size.width * 0.3,
-                                          height: 50,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                                  await Navigator.push(
-                                                      context,
-                                                  MaterialPageRoute(builder: (context) => const SignUpView()),
-                                                  );
-                                                  madeConnection();
-                                                },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.grey[700],
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(30),
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              "Sign Up",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      'college',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'credentials',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 28),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width * 0.65,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      TextField(
+                                        controller: emailController,
+                                        textAlign: TextAlign.center,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          hintText: 'Email',
+                                          hintStyle: const TextStyle(
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w400),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(40),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      TextField(
+                                        controller: passwordController,
+                                        obscureText: true,
+                                        textAlign: TextAlign.center,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          hintText: 'Password',
+                                          hintStyle: const TextStyle(
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w400),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(40),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 40),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            width: MediaQuery.of(context).size.width * 0.3,
+                                            height: 50,
+                                            child: ElevatedButton(
+
+                                              onPressed: _hasConnection && !_isLoading
+                                                  ? () {
+                                                      final email = emailController.text.trim();
+                                                      final password = passwordController.text.trim();
+                                                      _viewModel.signIn(email, password);
+                                                    }
+                                                  : null, // Desactiva el botón si no hay conexión
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: _hasConnection && !_isLoading
+                                                    ? Colors.grey[700]
+                                                    : Colors.grey,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(30),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                "Login",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10,),
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            width: MediaQuery.of(context).size.width * 0.3,
+                                            height: 50,
+                                            child: ElevatedButton(
+
+                                              onPressed: !_isLoading
+                                                  ? () async {
+                                                      await Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                          builder: (context) => const SignUpView(), // Reemplaza LoginView() con la pantalla siguiente
+                                                        ),
+                                                      );
+                                                      madeConnection();
+                                                    }
+                                                  : null, // Desactiva el botón si no hay conexión
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: _hasConnection && !_isLoading
+                                                    ? Colors.grey[700]
+                                                    : Colors.grey,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(30),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                "Sign Up",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],),
+                                      
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 }
-

@@ -34,13 +34,14 @@ class ProfileViewContent extends StatefulWidget {
 }
 
 class ProfileViewState extends State<ProfileViewContent> {
-  final UserModel _user = UserViewModel().user;
+  static final UserViewModel _userViewModel = UserViewModel();
   late ProfileViewModel profileViewModel;
   @override
   void initState() {
     super.initState();
     loadDatos();
   }
+
 
   void loadDatos() async {
     profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
@@ -141,7 +142,7 @@ class ProfileViewState extends State<ProfileViewContent> {
               children: [
                 Header(
                   showUserInfo: false,
-                  user: _user,
+                  user: _userViewModel.user,
                   showHomeIcon: true,
                   showLogoutIcon: true,
                   showNotiIcon: true,
@@ -184,8 +185,8 @@ class ProfileViewState extends State<ProfileViewContent> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                    _user.name[0].toUpperCase() +
-                                        _user.name.substring(1),
+                                    _userViewModel.user.name[0].toUpperCase() +
+                                        _userViewModel.user.name.substring(1),
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 20)),
                               ],
@@ -216,7 +217,7 @@ class ProfileViewState extends State<ProfileViewContent> {
                                 const Text("Email",
                                     style: TextStyle(
                                         color: Colors.white, fontSize: 16)),
-                                Text(_user.name,
+                                Text(_userViewModel.user.email,
                                     style: const TextStyle(
                                         color: Colors.grey, fontSize: 14)),
                               ],
