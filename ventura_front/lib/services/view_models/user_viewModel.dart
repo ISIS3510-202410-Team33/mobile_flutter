@@ -10,17 +10,29 @@ import '../../mvvm_components/observer.dart';
 
 class UserViewModel extends EventViewModel {
 
-  late UserRepository _repository;
   static final UserViewModel _instance = UserViewModel._internal();
-  UserModel user = UserModel(id: -1, name: "Default", email: "Default", college: -1);
+  late UserRepository _repository;
+  bool created = false;
+  late UserModel user;
 
   factory UserViewModel() {
     return _instance;
   }
 
   UserViewModel._internal() {
-    print("New UserViewModel");
+    created = true;
+    print("UserViewModel created");
+    changeUser(UserModel(id: -1, name: "Default", email: "Default", college: -1));
     _repository = UserRepository();
+  }
+
+  void changeUser(UserModel newUser) {
+    print("User changed to ${newUser.name}");
+    user = newUser;
+    print(user.id);
+    print(user.name);
+    print(user.email);
+    print(user.college);
   }
 
   void getCredentials(){
@@ -31,20 +43,23 @@ class UserViewModel extends EventViewModel {
       _repository.getUser(userCred.email!).then((value) {
         final keys = jsonDecode(value.body);
         if (keys.length > 0) {
-          UserModel userModel = UserModel.fromJson(keys[0]);
-          user = userModel;
-          notify(SignInSuccessEvent(user: userModel));
+          changeUser(UserModel.fromJson(keys[0]));
+          notify(SignInSuccessEvent(user: user));
+          notify(LoadingUserEvent(isLoading: false));
         }
         else{
           notify(SignInFailedEvent(reason: "backend-notFound"));
+          notify(LoadingUserEvent(isLoading: false));
         }
-      }).onError((error, stackTrace) {notify(SignInFailedEvent(reason: "backend-error"));});
-
-      notify(LoadingUserEvent(isLoading: false));
+      }).onError((error, stackTrace) {
+        
+        notify(SignInFailedEvent(reason: "backend-error"));
+        notify(LoadingUserEvent(isLoading: false));
+        });
 
     } else {
-      notify(LoadingUserEvent(isLoading: false));
       notify(SignInFailedEvent(reason: "firebase-notLoggedIn"));
+      notify(LoadingUserEvent(isLoading: false));
     }
     
   }
@@ -56,17 +71,15 @@ class UserViewModel extends EventViewModel {
     })
     .then((value) {
       final decodejson = jsonDecode(value.body);
-      if (decodejson.length == 0) {
+      if (decodejson.length > 0) {
+        changeUser(UserModel.fromJson(decodejson[0]));
+        notify(SignInSuccessEvent(user: user));
+        notify(LoadingUserEvent(isLoading: false));
+      }
+      else {        
         notify(SignInFailedEvent(reason: "backend-not-found"));
         notify(LoadingUserEvent(isLoading: false));
-        return;
       }
-      UserModel userModel = UserModel.fromJson(decodejson[0]);
-      user = userModel;
-
-      print("UserViewModel: signIn: ${user}");
-      notify(SignInSuccessEvent(user: user));
-      notify(LoadingUserEvent(isLoading: false));
     })
     .catchError((error){
       notify(SignInFailedEvent(reason: "Error ${error.toString()}"));
@@ -75,11 +88,10 @@ class UserViewModel extends EventViewModel {
   }
 
   void signOut() {
-    notify(LoadingUserEvent(isLoading: true));
     _repository.signOut();
-    notify(SignOutEvent(success: true));
-    notify(LoadingUserEvent(isLoading: false));
   }
+
+
 
   void signUp(String email, String password) {
     notify(LoadingUserEvent(isLoading: true));
@@ -88,7 +100,7 @@ class UserViewModel extends EventViewModel {
     })
     .then((value){
       if (value.statusCode == 201) {
-        user = UserModel.fromJson(jsonDecode(value.body));
+        changeUser(UserModel.fromJson(jsonDecode(value.body)));
         notify(SignUpSuccessEvent(user: user));
         notify(LoadingUserEvent(isLoading: false));
       }

@@ -10,10 +10,8 @@ import './components/weather_component.dart';
 import './components/university_component.dart';
 import './components/options_component.dart';
 
-import '../../services/models/user_model.dart';
-
 class HomeView extends StatelessWidget {
-  const HomeView({Key? key}) : super(key: key);
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +35,8 @@ class HomeViewContentState extends State<HomeViewContent>
   Position? position;
   late WeatherViewModel weatherViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
-
-  bool _hasConnection = true;
   static final UserViewModel _userViewModel = UserViewModel();
-  final UserModel _user = _userViewModel.user;
+  bool _hasConnection = true;
 
   Future<Position> determinePosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -73,12 +69,11 @@ class HomeViewContentState extends State<HomeViewContent>
   }
 
   void madeConnection() {
-    print("Home view made connection");
+    print("Home View");
+
     _connectionViewModel.subscribe(this);
-    _userViewModel.subscribe(this);
     _connectionViewModel.isInternetConnected().then((value) {
       setState(() {
-        _hasConnection = value;
         if (weatherViewModel.weatherData != null) {
             weatherViewModel.weatherData!.signal = _hasConnection;
           }
@@ -89,14 +84,55 @@ class HomeViewContentState extends State<HomeViewContent>
       else{
         notify(ConnectionEvent(connection: false));
       }
+      setState(() {
+        _hasConnection = value;
+      });
     });
   }
 
   @override
   void dispose() {
-    _userViewModel.unsubscribe(this);
     _connectionViewModel.unsubscribe(this);
     super.dispose();
+  }
+
+  
+  @override
+  void notify(ViewEvent event) {
+    if (event is ConnectionEvent ) {
+      if (event.connection && event.connection != _hasConnection) {
+        print("Conexión establecida");
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(seconds: 3),
+            backgroundColor: Colors.green,
+            content: Text('You are connected again'),
+          ),
+        );
+        setState(() {
+          if (weatherViewModel.weatherData != null) {
+            weatherViewModel.weatherData!.signal = true;
+          }
+        });
+      } else {
+        print("Conexión perdida");
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(days: 1),
+            backgroundColor: Colors.red,
+            content: Text('No internet connection'),
+          ),
+        );
+        setState(() {
+          weatherViewModel.weatherData!.signal = false;
+        });
+      }
+      setState(() {
+        _hasConnection = event.connection;
+      });
+    }
   }
 
   @override
@@ -123,7 +159,7 @@ class HomeViewContentState extends State<HomeViewContent>
             children: [
               Header(
                 showUserInfo: true,
-                user: _user,
+                user: _userViewModel.user,
                 showHomeIcon: false,
                 showLogoutIcon: true,
                 showNotiIcon: true,
@@ -153,41 +189,4 @@ class HomeViewContentState extends State<HomeViewContent>
     );
   }
 
-  @override
-  void notify(ViewEvent event) {
-    if (event is ConnectionEvent) {
-      setState(() {
-        _hasConnection = event.connection;
-      });
-      if (event.connection) {
-        print("Conexión establecida");
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(seconds: 3),
-            backgroundColor: Colors.green,
-            content: Text('You are connected again'),
-          ),
-        );
-        setState(() {
-          if (weatherViewModel.weatherData != null) {
-            weatherViewModel.weatherData!.signal = true;
-          }
-        });
-      } else {
-        print("Conexión perdida");
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(days: 1),
-            backgroundColor: Colors.red,
-            content: Text('You can\'t log in because you don\'t have connection'),
-          ),
-        );
-        setState(() {
-          weatherViewModel.weatherData!.signal = false;
-        });
-      }
-    }
-  }
 }
