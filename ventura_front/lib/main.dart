@@ -27,6 +27,8 @@ Future<void> main() async {
   deleteSharedPreferencesEveryMinute();
 }
 
+
+
 Future<void> loadEnv() async {
   try {
     dotenv.load(fileName: ".env");
@@ -34,7 +36,7 @@ Future<void> loadEnv() async {
   } on IOException catch (e) {
     print("Error cargando archivo .env: $e");
   }
-}
+}  
 
 class MainApp extends StatelessWidget {
   final bool isDarkMode;
@@ -43,11 +45,11 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of
     <ThemeProvider>(context);
-    return MaterialApp(
+    return Proximity(child:MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: themeProvider.getTheme(),
-      home: Proximity(child: const LoadingView()),
-    );
+      home: const LoadingView(),
+    ),);
   }
 }
 

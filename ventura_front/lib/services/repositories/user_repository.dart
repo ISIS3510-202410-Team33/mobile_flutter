@@ -35,8 +35,8 @@ final class UserRepository {
     return _auth.createUserWithEmailAndPassword(email: email, password: password);
   }
 
-  Future<void> signOut() {
-    return _auth.signOut();
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 
   User? getCredentials() {

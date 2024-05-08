@@ -181,7 +181,7 @@ class HomeViewContentState extends State<HomeViewContent>
           const SnackBar(
             duration: Duration(days: 1),
             backgroundColor: Colors.red,
-            content: Text('You can\'t log in because you don\'t have connection'),
+            content: Text('You are not connected at this time'),
           ),
         );
         setState(() {

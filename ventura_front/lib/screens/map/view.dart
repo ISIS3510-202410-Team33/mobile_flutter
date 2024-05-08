@@ -6,6 +6,8 @@ import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 import "package:provider/provider.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
+import "package:ventura_front/services/models/calification_model.dart";
+import "package:ventura_front/services/view_models/calification_viewmodel.dart";
 
 import "../../services/models/location_model.dart";
 import "../../services/models/user_model.dart";
@@ -53,6 +55,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   GpsRepository gps = GpsRepository.getState();
 
   final LocationsViewModel _viewModel = LocationsViewModel();
+  final CalificationViewModel _viewModelCalifications = CalificationViewModel();
   late ProfileViewModel profileViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
 
@@ -285,6 +288,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   List<Widget> getUpdatedLocationsList() {
     List<Widget> locationWidgetsUpdated = [];
     for (var location in _viewModel.locations.values) {
+      _viewModelCalifications.sendCalification(userId: user.id, locationId: location.id);
       locationWidgetsUpdated.add(
         Column(
           children: [
