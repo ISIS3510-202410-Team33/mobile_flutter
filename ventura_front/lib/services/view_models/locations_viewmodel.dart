@@ -66,7 +66,7 @@ class LocationsViewModel extends EventViewModel {
     
   }
 
-  List<String> getSortedIndex(Map<String, double> distances){
+  List<String>  getSortedIndex(Map<String, double> distances){
     List<MapEntry<String, double>> entries = distances.entries.toList();
     entries.sort((a, b) => a.value.compareTo(b.value));
     List<String> sortedIndices = entries.map((entry) => entry.key).toList();

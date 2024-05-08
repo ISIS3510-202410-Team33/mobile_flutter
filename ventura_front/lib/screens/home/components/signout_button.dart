@@ -10,6 +10,31 @@ class SignOutComponent extends StatelessWidget {
   static final ConnectionViewModel  _connectionViewModel = ConnectionViewModel();
   static final LocationsViewModel _locationsViewModel = LocationsViewModel();
 
+  Future<bool> verifyInternetConnection() async{
+    return await _connectionViewModel.isInternetConnected();
+  }
+
+  bool signOut(isLoading, context){
+    bool newLoading = isLoading; 
+    if (!isLoading){
+      newLoading = true;
+      _connectionViewModel.isInternetConnected().then((value) {
+        newLoading = value;
+        if (value){  
+          _userViewModel.signOut();
+          _locationsViewModel.cleanCache();
+          _locationsViewModel.restartLocations();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
+            ),
+          );
+        }
+      });
+    }
+    return newLoading;
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isLoading = false;
@@ -28,17 +53,9 @@ class SignOutComponent extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.logout, color: Colors.white),
-              onPressed: !isLoading && _connectionViewModel.isConnected() ? () {
-                _userViewModel.signOut();
-                _locationsViewModel.cleanCache();
-                _locationsViewModel.restartLocations();
-                isLoading = true;
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
-                  ),
-                );
-              } : null,
+              onPressed: (){
+                isLoading = signOut(isLoading, context);
+              }
             )
           ],
         ));

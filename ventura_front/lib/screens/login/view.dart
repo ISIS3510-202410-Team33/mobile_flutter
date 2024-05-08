@@ -80,7 +80,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
           const SnackBar(
             duration: Duration(days: 1),
             backgroundColor: Colors.red,
-            content: Text('You can\'t sign up because you don\'t have connection'),
+            content: Text('You can\'t sign in because you don\'t have connection'),
           ),
         );
       }
@@ -100,7 +100,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text("Sign Up Failed"),
+          title: const Text("Sign In Failed"),
           content: const Text("Please enter valid email and password"),
           actions: <Widget>[
             TextButton(

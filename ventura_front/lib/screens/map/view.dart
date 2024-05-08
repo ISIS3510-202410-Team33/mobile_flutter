@@ -196,7 +196,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     }
   }
 
-  List<Widget> getRecommendedWidget(location) {
+  Widget getRecommendedWidget(location) {
     List<Widget> widgets = [];
     if (location.recommended ?? false) {
       widgets.add(const Icon(Icons.recommend, color: Colors.white, size: 30));
@@ -204,13 +204,18 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       widgets.add(const Text("Recommended location",
           style: TextStyle(color: Colors.white, fontSize: 14)));
       widgets.add(const Spacer());
-      return widgets;
+      return Column(
+        children: [
+          Row( children: widgets),
+          const SizedBox(height: 10)
+        ],
+      );
     } else {
-      return [];
+      return const SizedBox();
     }
   }
 
-  List<Widget> getBestRatedWidget(location){
+  Widget getBestRatedWidget(location){
     List<Widget> widgets = [];
     if (location.bestRated ?? false) {
       widgets.add(const Icon(Icons.star, color: Colors.yellow, size: 30));
@@ -218,10 +223,17 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       widgets.add(const Text("Best rated location",
           style: TextStyle(color: Colors.white, fontSize: 14)));
       widgets.add(const Spacer());
-      return widgets;
+      return Column(
+        children: [
+          Row( children: widgets),
+          const SizedBox(height: 10)
+        ],
+      );
     } else {
-      return [];
+      return const SizedBox();
     }
+
+    
   }
 
   void restart(){
@@ -257,210 +269,225 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       locationWidgetsUpdated.add(
         Column(
           children: [
-            Column(
-              // Aqui se agregan las recomendaciones si hay
-              children: [
-                Row(children: getRecommendedWidget(location)),
-                Row(children: getBestRatedWidget(location)),
-                
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    location.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    overflow: TextOverflow
-                        .visible, // Permite que el texto se desborde si es demasiado largo
-                  ),
-                ),
-                Row(
+            Material(
+              color: location.bestRated ?? false ? const Color(0xFF393053) : const Color(0xFF262E32),
+              elevation:10,
+              shadowColor: Colors.black,
+              borderRadius: BorderRadius.circular(60),
+              child: Container(
+                padding: const EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 20),
+                child: Column(
                   children: [
-                    TextButton(
-                        onPressed: () {
-                          if (_hasConnection){
-                            addCalorias(gps.getDistanceLatLon(
-                                location.latitude, location.longitude));
-                            addPasos(gps.getDistanceLatLon(
-                                location.latitude, location.longitude));
-                            gps.launchGoogleMaps(
-                                location.latitude, location.longitude);
-                            _locationsViewModel.updateLocationFrequency(user.id, location.id);
-                            if (_hasConnection){
-                              _locationsViewModel.updateBestRatedLocationNet();
-                            }
-                          } 
-                          else{
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("No internet connection"),
-                                  content: const Text("You need an internet connection to locate a place"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: (){
-                                        Navigator.of(context).pop();
+                    Column(
+                      // Aqui se agregan las recomendaciones si hay
+                      children: [
+                        getRecommendedWidget(location),
+                        getBestRatedWidget(location),
+                        
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            location.name,
+                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                            overflow: TextOverflow
+                                .visible, // Permite que el texto se desborde si es demasiado largo
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            TextButton(
+                                onPressed: () {
+                                  if (_hasConnection){
+                                    addCalorias(gps.getDistanceLatLon(
+                                        location.latitude, location.longitude));
+                                    addPasos(gps.getDistanceLatLon(
+                                        location.latitude, location.longitude));
+                                    gps.launchGoogleMaps(
+                                        location.latitude, location.longitude);
+                                    _locationsViewModel.updateLocationFrequency(user.id, location.id);
+                                    if (_hasConnection){
+                                      _locationsViewModel.updateBestRatedLocationNet();
+                                    }
+                                  } 
+                                  else{
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: const Text("No internet connection"),
+                                          content: const Text("You need an internet connection to locate a place"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: (){
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text("OK"),
+                                            )
+                                          ],
+                                        );
                                       },
-                                      child: const Text("OK"),
-                                    )
-                                  ],
-                                );
-                              },
-                            );
-                          }
-                        },
-                        child: Container(
-                            padding: const EdgeInsets.only(
-                                top: 5, bottom: 5, left: 20, right: 20),
-                            decoration: BoxDecoration(
-                                color: const Color(0xFF3D3B40),
-                                borderRadius: BorderRadius.circular(60)),
-                            child: const Text("Locate",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 15)))),
-                  ],
-                ),
-              ],
-            ),
-            ExpansionTile(
-              title: const Text(
-                'Show more information',
-                style: TextStyle(
-                    color: Color.fromARGB(255, 211, 164, 219),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Green zones: ${location.greenAreas}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14)),
-                        Text("Restaurants: ${location.restaurants}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                            "Obstructions: ${location.obstructions ? "Sí" : "No"}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14)),
-                        Text("Floors: ${location.floors}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text("Latitude: ${location.latitude} ",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 14)),
-                    Text("Longitude: ${location.longitude}",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 14)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const Text("Distance: ",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 14)),
-                        Text(
-                            setDistance(gps.getDistanceLatLon(
-                                location.latitude, location.longitude)),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const Text("Estimated walking \ntime: ",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 14)),
-                        Text(
-                            setTime(gps.getTimeLatLon(
-                                location.latitude, location.longitude, 0)),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                    const SizedBox(height: 15,)
-                  ],
-                ),
-              ],
-            ),
-            
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    if(_hasConnection){
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return const RateIcon();
-                        },
-                      );
-                    }
-                    else{
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text("No internet connection"),
-                            content: const Text("You need an internet connection to rate a place"),
-                            actions: [
-                              TextButton(
-                                onPressed: (){
-                                  Navigator.of(context).pop();
+                                    );
+                                  }
                                 },
-                                child: const Text("OK"),
-                              )
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Rate this location!',
-                    style: TextStyle(
-                      //dark purple
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold),
-                  ),
+                                child: Container(
+                                    padding: const EdgeInsets.only(
+                                        top: 5, bottom: 5, left: 20, right: 20),
+                                    decoration: BoxDecoration(
+                                        color: const Color(0xFF3D3B40),
+                                        borderRadius: BorderRadius.circular(60)),
+                                    child: const Text("Locate",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 15)))),
+                          ],
+                        ),
+                      ],
+                    ),
+                    ExpansionTile(
+                      title: const Text(
+                        'Show more information',
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 211, 164, 219),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      children: <Widget>[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Green zones: ${location.greenAreas}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14)),
+                                Text("Restaurants: ${location.restaurants}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                    "Obstructions: ${location.obstructions ? "Sí" : "No"}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14)),
+                                Text("Floors: ${location.floors}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text("Latitude: ${location.latitude} ",
+                                style:
+                                    const TextStyle(color: Colors.white, fontSize: 14)),
+                            Text("Longitude: ${location.longitude}",
+                                style:
+                                    const TextStyle(color: Colors.white, fontSize: 14)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const Text("Distance: ",
+                                    style:
+                                        TextStyle(color: Colors.white, fontSize: 14)),
+                                Text(
+                                    setDistance(gps.getDistanceLatLon(
+                                        location.latitude, location.longitude)),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const Text("Estimated walking \ntime: ",
+                                    style:
+                                        TextStyle(color: Colors.white, fontSize: 14)),
+                                Text(
+                                    setTime(gps.getTimeLatLon(
+                                        location.latitude, location.longitude, 0)),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            const SizedBox(height: 15,)
+                          ],
+                        ),
+                      ],
+                    ),
+                    
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            if(_hasConnection){
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return const RateIcon();
+                                },
+                              );
+                            }
+                            else{
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("No internet connection"),
+                                    content: const Text("You need an internet connection to rate a place"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: (){
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("OK"),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          child: const Text(
+                            'Rate this location!',
+                            style: TextStyle(
+                              //dark purple
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Divider(
+                          color:  Color(0xFF3D3B40),
+                          thickness: 1,
+                          height: 1,
+                          indent: 0,
+                          endIndent: 0,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                    ],),
+                  ],
                 ),
-                const SizedBox(
-                   height: 10,
-                ),
-                const Divider(
-                  color:  Color(0xFF3D3B40),
-                  thickness: 1,
-                  height: 1,
-                  indent: 0,
-                  endIndent: 0,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-            ],),
-            
+              )
+
+            )
+            , const SizedBox(height: 30,)
           ],
-        ),
+        )
+        
       );
     }
     return locationWidgetsUpdated;

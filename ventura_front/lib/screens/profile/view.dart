@@ -1,9 +1,6 @@
 import "package:flutter/material.dart";
-import "package:flutter/widgets.dart";
 import "package:provider/provider.dart";
 import "package:ventura_front/screens/home/view.dart";
-import "package:ventura_front/services/models/user_model.dart";
-import "package:ventura_front/services/repositories/user_repository.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
@@ -237,7 +234,7 @@ class ProfileViewState extends State<ProfileViewContent> {
                         profileViewModel.calorias),
                 const SizedBox(height: 10),
                 const Text(
-                    "This information is stored locally and will be deleted at 12:00am of each day.",
+                    "This information is stored locally",
                     softWrap: true,
                     style: TextStyle(
                       color: Colors.grey,

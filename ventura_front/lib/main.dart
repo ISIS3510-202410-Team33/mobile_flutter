@@ -8,7 +8,6 @@ import 'package:ventura_front/screens/loading/view.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ventura_front/screens/settings/components/theme_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:ventura_front/sensors_components/proximity_sensor.dart';
 
 
 
@@ -46,7 +45,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: themeProvider.getTheme(),
-      home: Proximity(child: const LoadingView()),
+      home: LoadingView(),
     );
   }
 }
