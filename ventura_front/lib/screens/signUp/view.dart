@@ -1,15 +1,14 @@
 import "package:flutter/material.dart";
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/login/view.dart";
 import "package:ventura_front/sensors_components/proximity_sensor.dart";
+
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
 import "../../mvvm_components/observer.dart";
-import "../../services/repositories/user_repository.dart";
 
 
 class  SignUpView extends StatefulWidget {
@@ -62,7 +61,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
   @override
   void notify(ViewEvent event) {  
 
-    if (event is ConnectionEvent) {
+    if (event is ConnectionEvent && event.connection != _hasConnection) {
       setState(() {
         _hasConnection = event.connection;
       });
@@ -127,14 +126,15 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
         ),
       ); 
     } else if (event is SignInSuccessEvent) {
-      print("Success sign up");
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
-    }else if (event is SignUpFailedEvent) {
-      print("No Credentials");
+
+    } else if (event is SignInFailedEvent) {
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const SignUpView(), // Reemplaza LoginView() con la pantalla siguiente

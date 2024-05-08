@@ -19,24 +19,30 @@ class LoadingView extends StatefulWidget {
 
 class LoadingViewState extends State<LoadingView> implements EventObserver{
 
-  static final UserViewModel _viewModel = UserViewModel();
+  static final UserViewModel _userViewModel = UserViewModel();
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
 
   @override
   void initState() {
     super.initState();
-    _viewModel.subscribe(this);
+    _userViewModel.subscribe(this);
     _connectionViewModel.subscribe(this);
     _connectionViewModel.isInternetConnected().then((value) {
       if (value){
-        _viewModel.getCredentials();
+        _userViewModel.getCredentials();
       }
     });
   }
 
   @override
-  void notify(ViewEvent event) {  
+  void dispose() {
+    _userViewModel.unsubscribe(this);
+    _connectionViewModel.unsubscribe(this);
+    super.dispose();
+  }
 
+  @override
+  void notify(ViewEvent event) {  
     if (event is SignInSuccessEvent) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -56,12 +62,12 @@ class LoadingViewState extends State<LoadingView> implements EventObserver{
     else if (event is ConnectionEvent) {
       print("Connection state: ${event.connection ? 'Connected' : 'Disconnected'}");
       if (event.connection) {
-        if (_viewModel.isSuscribed(this)){
-          _viewModel.getCredentials();
+        if (_userViewModel.isSuscribed(this)){
+          _userViewModel.getCredentials();
         }
         else {
-          _viewModel.subscribe(this);
-          _viewModel.getCredentials();
+          _userViewModel.subscribe(this);
+          _userViewModel.getCredentials();
         }
       } else {
         Navigator.of(context).pushReplacement(

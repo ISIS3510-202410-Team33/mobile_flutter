@@ -33,7 +33,7 @@ class OptionsState extends State<Options> {
 
 
   void initializeOptions (){
-    dataWidgets.forEach((element) { 
+    for (var element in dataWidgets) { 
       optionWidgets.add(
         const SizedBox(height: 20,)
       );
@@ -52,7 +52,7 @@ class OptionsState extends State<Options> {
                   ),
               )
       );
-    });
+    }
   } 
 
   @override

@@ -22,4 +22,9 @@ class LocationModel {
     this.bestRated,
     this.recommended
   }); 
+
+  @override
+  String toString() {
+    return 'LocationModel{id: $id, name: $name, floors: $floors, restaurants: $restaurants, greenAreas: $greenAreas, latitude: $latitude, longitude: $longitude, obstructions: $obstructions, bestRated: $bestRated, recommended: $recommended}';
+  }
 }
