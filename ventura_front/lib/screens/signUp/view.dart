@@ -2,6 +2,9 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
+import "package:ventura_front/screens/login/view.dart";
+import "package:ventura_front/sensors_components/proximity_sensor.dart";
+
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
@@ -94,6 +97,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
     } else if (event is SignUpSuccessEvent) {
 
       print("Sing up success");
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('User created successfully'),
@@ -110,7 +114,7 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
         context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text("Sign Up Failed"),
-          content: const Text("Please enter valid email and password"),
+          content: const Text("This email is already registered, please enter another email"),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -120,14 +124,17 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
             )
           ],
         ),
-      );
+      ); 
     } else if (event is SignInSuccessEvent) {
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const HomeView(), // Reemplaza LoginView() con la pantalla siguiente
+          builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
         ),
       );
+
     } else if (event is SignInFailedEvent) {
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const SignUpView(), // Reemplaza LoginView() con la pantalla siguiente
@@ -135,8 +142,8 @@ class SignUpViewState extends State<SignUpView> implements EventObserver{
       );
     }
     
-
   }
+
 
   @override
   Widget build(BuildContext context) {

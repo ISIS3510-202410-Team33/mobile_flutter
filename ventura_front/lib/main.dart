@@ -7,6 +7,7 @@ import 'package:ventura_front/firebase_options.dart';
 import 'package:ventura_front/screens/loading/view.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ventura_front/screens/settings/components/theme_provider.dart';
+import 'package:ventura_front/sensors_components/proximity_sensor.dart';
 import 'package:provider/provider.dart';
 
 
@@ -26,6 +27,8 @@ Future<void> main() async {
   deleteSharedPreferencesEveryMinute();
 }
 
+
+
 Future<void> loadEnv() async {
   try {
     dotenv.load(fileName: ".env");
@@ -33,7 +36,7 @@ Future<void> loadEnv() async {
   } on IOException catch (e) {
     print("Error cargando archivo .env: $e");
   }
-}
+}  
 
 class MainApp extends StatelessWidget {
   final bool isDarkMode;
@@ -42,11 +45,11 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of
     <ThemeProvider>(context);
-    return MaterialApp(
+    return Proximity(child:MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: themeProvider.getTheme(),
-      home: LoadingView(),
-    );
+      home: const LoadingView(),
+    ),);
   }
 }
 

@@ -1,15 +1,22 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' as foundation;
-import 'dart:async';
 import 'package:proximity_sensor/proximity_sensor.dart';
-
 
 class Proximity extends StatefulWidget {
   final Widget child;
 
-  const Proximity({super.key, required this.child}); 
+  const Proximity({Key? key, required this.child}) : super(key: key);
+
   @override
   _ProximityState createState() => _ProximityState();
+
+  static bool isNear(BuildContext context) {
+    final _ProximityState? state =
+        context.findAncestorStateOfType<_ProximityState>();
+    assert(state != null, 'No Proximity found in context');
+    return state!.isNear;
+  }
 }
 
 class _ProximityState extends State<Proximity> {
@@ -47,9 +54,10 @@ class _ProximityState extends State<Proximity> {
     });
   }
 
-  
+  bool get isNear => _isNear;
+
   @override
   Widget build(BuildContext context) {
     return widget.child;
-}
+  }
 }

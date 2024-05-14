@@ -1,69 +1,116 @@
-import "package:flutter/material.dart";
-import "package:url_launcher/url_launcher.dart";
-import "../../mvvm_components/observer.dart";
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:ventura_front/mvvm_components/observer.dart';
+import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
+import 'package:ventura_front/services/view_models/locations_viewmodel.dart';
 
 class NotificationView extends StatefulWidget {
-  const NotificationView({super.key});
+  const NotificationView({Key? key}) : super(key: key);
 
   @override
-  State createState() => NotificationViewState();
+  _NotificationViewState createState() => _NotificationViewState();
 }
 
-class NotificationViewState extends State<NotificationView> implements EventObserver{
+class _NotificationViewState extends State<NotificationView> {
+  bool _hasConnection = true;
+  final LocationsViewModel _viewModel = LocationsViewModel();
+  String? _recommendedLocationName;
+
   @override
-  Widget build(BuildContext context) { 
+  void initState() {
+    super.initState();
+    _viewModel.getLocations();
+    _findRecommendedLocation();
+  }
+
+  @override
+  void notify(ViewEvent event) {  
+    if (event is ConnectionEvent) {
+      if (event.connection){
+        setState(()=> _hasConnection = true);
+      }
+      else {
+        setState(()=> _hasConnection = false);
+      }
+    }
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Lógica para regresar a la pantalla anterior
             Navigator.pop(context);
           },
         ),
       ),
       body: Container(
-        color: Colors.white,
-        child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: GestureDetector(
-        onTap: () {
-          _launchURL(); // Llama a la función para abrir la URL al hacer clic
-        },
-        child: const Text(
-          "Your most recommended location is ML Building",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.underline,
+        color: const Color.fromARGB(255, 46, 45, 45), // Fondo gris
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white, // Fondo blanco
+                borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.fromARGB(255, 160, 159, 159).withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3), // Cambia la posición de la sombra
+                  ),
+                ],
+              ),
+              child: GestureDetector(
+                onTap: _hasConnection? () {
+                  _launchURL();
+                }: null,
+                child: Text(
+                  _recommendedLocationName != null
+                      ? "Your most recommended location is: $_recommendedLocationName"
+                      : "You don't have notifications",
+                    textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
-    ),
-  ],
-),
       ),
     );
   }
 
-  _launchURL() async {
-  final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/"); 
-  if (await canLaunchUrl(url)) {
-    await launchUrl(url);
-  } else {
-    throw 'Could not launch $url';
-  }
-}
-
-
-  @override
-  void notify(ViewEvent event) {
-    // TODO: implement notify
+  void _findRecommendedLocation() {
+    if (_viewModel.locations.isNotEmpty) {
+      var firstLocation = _viewModel.locations.values.first;
+      _recommendedLocationName = firstLocation.name;
+    }
   }
 
-
+  void _launchURL() async {
+    if (_recommendedLocationName != null) {
+      if (_recommendedLocationName!.toLowerCase().contains('ml')) {
+        final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/");
+        if (await canLaunch(url.toString())) {
+          await launch(url.toString());
+        } else {
+          throw 'Could not launch $url';
+        }
+      } else {
+        print('Location not supported');
+      }
+    } else {
+      print("You don't have notifications");
+    }
+  }
 }

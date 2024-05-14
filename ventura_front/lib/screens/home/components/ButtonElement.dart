@@ -3,6 +3,7 @@ import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/map/view.dart';
 import 'package:ventura_front/screens/profile/view.dart';
 import 'package:ventura_front/screens/settings/view.dart';
+import 'package:ventura_front/sensors_components/proximity_sensor.dart';
 
 class MyButton extends StatelessWidget {
   final IconData iconData;
