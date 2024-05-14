@@ -1,13 +1,10 @@
 import "package:flutter/material.dart";
-import "package:flutter/rendering.dart";
-import "package:flutter/widgets.dart";
 import "package:geolocator/geolocator.dart";
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 import "package:provider/provider.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
-import "package:ventura_front/services/models/calification_model.dart";
 import "package:ventura_front/services/view_models/calification_viewmodel.dart";
 
 import "../../services/models/location_model.dart";
@@ -54,6 +51,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
 
   final LocationsViewModel _viewModel = LocationsViewModel();
   final CalificationViewModel _viewModelCalifications = CalificationViewModel();
+  final LocationsViewModel _locationsViewModel = LocationsViewModel();
 
   late ProfileViewModel profileViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();

@@ -5,13 +5,15 @@ import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/locations_viewmodel.dart';
 
 class NotificationView extends StatefulWidget {
-  const NotificationView({Key? key}) : super(key: key);
+  const NotificationView({super.key});
 
   @override
   _NotificationViewState createState() => _NotificationViewState();
 }
 
-class _NotificationViewState extends State<NotificationView> {
+class _NotificationViewState extends State<NotificationView> implements EventObserver{
+
+
   bool _hasConnection = true;
   final LocationsViewModel _viewModel = LocationsViewModel();
   String? _recommendedLocationName;
@@ -19,7 +21,7 @@ class _NotificationViewState extends State<NotificationView> {
   @override
   void initState() {
     super.initState();
-    _viewModel.getLocations();
+    _viewModel.getLocationsCache();
     _findRecommendedLocation();
   }
 
@@ -76,7 +78,7 @@ class _NotificationViewState extends State<NotificationView> {
                       ? "Your most recommended location is: $_recommendedLocationName"
                       : "You don't have notifications",
                     textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.none,

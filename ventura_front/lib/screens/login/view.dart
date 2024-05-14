@@ -3,8 +3,7 @@ import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/signUp/view.dart";
-import "package:ventura_front/sensors_components/proximity_sensor.dart";
-import "package:ventura_front/screens/signup/view.dart";
+
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
@@ -121,13 +120,6 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
   }
 
-
-  @override
-  void dispose() {
-    super.dispose();
-    _viewModel.unsubscribe(this);
-    _connectionViewModel.unsubscribe(this);
-  }
 
   
 
