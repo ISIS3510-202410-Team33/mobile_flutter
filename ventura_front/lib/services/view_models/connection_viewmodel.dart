@@ -81,7 +81,7 @@ class ConnectionViewModel extends EventViewModel {
   }
 
   void spreadConnectionState(bool state) {
-    !isSuscribing() ? notify(ConnectionEvent(connection: state)) : null;
+    notify(ConnectionEvent(connection: state)) ;
   }
 }
 

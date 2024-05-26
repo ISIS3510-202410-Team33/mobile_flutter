@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:ventura_front/mvvm_components/observer.dart';
+import 'package:ventura_front/services/models/weather_model.dart';
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/user_viewModel.dart';
 import 'package:ventura_front/services/view_models/weather_viewmodel.dart';
@@ -62,6 +63,16 @@ class HomeViewContentState extends State<HomeViewContent>
     }
   }
 
+  Future<void> getWeather() async {
+    try {
+      weatherViewModel = Provider.of<WeatherViewModel>(context, listen: false);
+      await weatherViewModel.getWeather(
+          position!.latitude, position!.longitude);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,11 +85,7 @@ class HomeViewContentState extends State<HomeViewContent>
 
     _connectionViewModel.subscribe(this);
     _connectionViewModel.isInternetConnected().then((value) {
-      setState(() {
-        if (weatherViewModel.weatherData != null) {
-            weatherViewModel.weatherData!.signal = _hasConnection;
-          }
-      });
+
       if(value){
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
       }
@@ -87,6 +94,9 @@ class HomeViewContentState extends State<HomeViewContent>
       }
       setState(() {
         _hasConnection = value;
+        if (weatherViewModel.weatherData != null) {
+            weatherViewModel.weatherData!.signal = value;
+          }
       });
     });
   }
@@ -100,7 +110,7 @@ class HomeViewContentState extends State<HomeViewContent>
   
   @override
   void notify(ViewEvent event) {
-    if (event is ConnectionEvent && event.connection != _hasConnection) {
+    if (event is ConnectionEvent ) {
       if (event.connection ) {
         print("Conexión establecida");
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -116,6 +126,7 @@ class HomeViewContentState extends State<HomeViewContent>
             weatherViewModel.weatherData!.signal = true;
           }
         });
+        getWeather();
       } else {
         print("Conexión perdida");
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -127,7 +138,9 @@ class HomeViewContentState extends State<HomeViewContent>
           ),
         );
         setState(() {
-          weatherViewModel.weatherData!.signal = false;
+          if (weatherViewModel.weatherData != null) {
+            weatherViewModel.weatherData!.signal = false;
+          }
         });
       }
       setState(() {
@@ -167,6 +180,7 @@ class HomeViewContentState extends State<HomeViewContent>
                   homeViewContentState: this,
                 ),
                 const SizedBox(height: 20),
+              
                 Consumer<WeatherViewModel>(
                   builder: (context, weatherViewModel, _) {
                     final weatherData = weatherViewModel.weatherData;
@@ -174,8 +188,11 @@ class HomeViewContentState extends State<HomeViewContent>
                       return Weather(
                         weather: weatherData,
                       );
-                    } else {
+                    } else if (_hasConnection) {
                       return const CircularProgressIndicator();
+                    } else {
+                      final model = WeatherModel(description: '', location: '', temperature: 0, feelsLike: 0, pressure: 0, humidity: 0, signal: false);
+                      return Weather(weather: model);
                     }
                   },
                 ),

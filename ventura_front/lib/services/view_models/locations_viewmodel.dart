@@ -38,7 +38,6 @@ class LocationsViewModel extends EventViewModel {
 
     Map<String, LocationModel> locationsCopy = locationsBase;
     Map<String, double> distances = {};
-
     GpsRepository gps = GpsRepository.getState();
 
     for (var key in locationsCopy.keys) {

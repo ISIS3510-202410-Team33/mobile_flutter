@@ -579,6 +579,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                                     showAllLocationsButton = false;
                                   });;
                                 }
+                                _locationsViewModel.loadLocations(user.id);
                                 _locationsViewModel.updateBestRatedLocationNet();
                                 _locationsViewModel.updateRecommendedLocationsNet(user.id);
                                 

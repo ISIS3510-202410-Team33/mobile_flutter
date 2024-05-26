@@ -44,6 +44,7 @@ class ProfileViewState extends State<ProfileViewContent> {
     profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
     await profileViewModel.loadCalorias();
     await profileViewModel.loadPasos();
+    await profileViewModel.loadImage();
     setState(() {});
   }
 
@@ -146,19 +147,22 @@ class ProfileViewState extends State<ProfileViewContent> {
                   homeViewContentState: widget.homeViewContentState,
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF353A40), width: 1.5),
-                  ),
-                  child: const CircleAvatar(
-                    radius: 80,
-                    backgroundImage:
-                        AssetImage('lib/icons/perfil-de-usuario.png'),
+                
+                GestureDetector(
+                  onTap: () async {
+                    await profileViewModel.pickImage();
+                    setState(() {});
+                  },
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: profileViewModel.image != null
+                        ? Image.file(profileViewModel.image!).image
+                        : AssetImage('lib/icons/perfil-de-usuario.png'),
+                    backgroundColor: Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 20),
-                const University(),
+
+
                 const SizedBox(height: 20),
                 Material(
                     color: const Color(0xFF262E32),
@@ -217,6 +221,35 @@ class ProfileViewState extends State<ProfileViewContent> {
                                 Text(_userViewModel.user.email,
                                     style: const TextStyle(
                                         color: Colors.grey, fontSize: 14)),
+                              ],
+                            ),
+                          ],
+                        ))),
+                const SizedBox(height: 20),
+                Material(
+                    color: const Color(0xFF262E32),
+                    elevation: 10,
+                    shadowColor: Colors.black,
+                    borderRadius: BorderRadius.circular(60),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: const Color(0xFF262E32),
+                            borderRadius: BorderRadius.circular(60)),
+                        padding: const EdgeInsets.only(
+                            top: 15, bottom: 15, left: 50, right: 50),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.home,
+                                color: Colors.white, size: 30),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Universidad de los Andes",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 16)),
                               ],
                             ),
                           ],
