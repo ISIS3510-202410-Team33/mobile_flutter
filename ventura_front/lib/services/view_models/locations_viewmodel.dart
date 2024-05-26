@@ -38,7 +38,6 @@ class LocationsViewModel extends EventViewModel {
 
     Map<String, LocationModel> locationsCopy = locationsBase;
     Map<String, double> distances = {};
-
     GpsRepository gps = GpsRepository.getState();
 
     for (var key in locationsCopy.keys) {
@@ -66,7 +65,7 @@ class LocationsViewModel extends EventViewModel {
     
   }
 
-  List<String> getSortedIndex(Map<String, double> distances){
+  List<String>  getSortedIndex(Map<String, double> distances){
     List<MapEntry<String, double>> entries = distances.entries.toList();
     entries.sort((a, b) => a.value.compareTo(b.value));
     List<String> sortedIndices = entries.map((entry) => entry.key).toList();

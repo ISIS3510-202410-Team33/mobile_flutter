@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ventura_front/services/repositories/profile_repository.dart';
 
@@ -8,6 +10,7 @@ class ProfileViewModel with ChangeNotifier {
   int get calorias => _profileRepository.calorias;
   int get pasosHoy => _profileRepository.pasosHoy;
   int get caloriasHoy => _profileRepository.caloriasHoy;
+  File? get image => _profileRepository.image;
 
   Future<void> loadPasos() async {
     await _profileRepository.loadPasos();
@@ -38,4 +41,20 @@ class ProfileViewModel with ChangeNotifier {
     await _profileRepository.addCalorias(distance);
     notifyListeners();
   }
+
+  Future<void> pickImage() async {
+    await _profileRepository.pickImage();
+    notifyListeners();
+  }
+
+  Future<void> saveImage(File image) async {
+    await _profileRepository.saveImage(image);
+    notifyListeners();
+  }
+
+  Future<void> loadImage() async {
+    await _profileRepository.loadImage();
+    notifyListeners();
+  }
+
 }

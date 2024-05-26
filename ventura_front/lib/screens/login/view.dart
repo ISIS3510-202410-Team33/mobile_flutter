@@ -3,8 +3,7 @@ import "package:flutter/services.dart";
 
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/screens/signUp/view.dart";
-import "package:ventura_front/sensors_components/proximity_sensor.dart";
-import "package:ventura_front/screens/signup/view.dart";
+
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
@@ -84,7 +83,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
           const SnackBar(
             duration: Duration(days: 1),
             backgroundColor: Colors.red,
-            content: Text('You can\'t sign up because you don\'t have connection'),
+            content: Text('You can\'t sign in because you don\'t have connection'),
           ),
         );
       }
@@ -104,7 +103,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text("Sign Up Failed"),
+          title: const Text("Sign In Failed"),
           content: const Text("Please enter valid email and password"),
           actions: <Widget>[
             TextButton(
@@ -121,13 +120,6 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
   }
 
-
-  @override
-  void dispose() {
-    super.dispose();
-    _viewModel.unsubscribe(this);
-    _connectionViewModel.unsubscribe(this);
-  }
 
   
 
