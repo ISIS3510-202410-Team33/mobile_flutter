@@ -55,7 +55,6 @@ class MainApp extends StatelessWidget {
 
 void deleteSharedPreferencesEveryMinute() {
   Timer.periodic(Duration(seconds: 10), (timer) async {
-    print("##################");
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('weather');
   });

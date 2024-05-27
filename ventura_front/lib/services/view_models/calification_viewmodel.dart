@@ -13,7 +13,6 @@ class CalificationViewModel extends EventViewModel {
     return ++_calificationIdCounter;
   }
 
-  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Center(child: Text('Building Rating')),
