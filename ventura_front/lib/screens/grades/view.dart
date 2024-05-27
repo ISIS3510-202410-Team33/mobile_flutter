@@ -13,11 +13,11 @@ class GradesView extends StatefulWidget {
 
 class GradesViewState extends State<GradesView> implements EventObserver {
   final List<Course> courses = [
-    Course(id: 1, name: 'Mathematics', teacher: 'John Doe', schedule: 'Mon 9:00 AM - 11:00 AM'),
-    Course(id: 2, name: 'Science', teacher: 'Jane Smith', schedule: 'Tue 10:00 AM - 12:00 PM'),
-    Course(id: 3, name: 'History', teacher: 'Jim Brown', schedule: 'Wed 1:00 PM - 3:00 PM'),
-    Course(id: 4, name: 'Art', teacher: 'Sue Green', schedule: 'Thu 2:00 PM - 4:00 PM'),
-    Course(id: 5, name: 'Physical Education', teacher: 'Tom White', schedule: 'Fri 8:00 AM - 10:00 AM'),
+    Course(id: 1, name: 'Mathematics', professor: 'John Doe', description: 'Mon 9:00 AM - 11:00 AM', date: 0),
+    Course(id: 2, name: 'Science', professor: 'Jane Smith', description: 'Tue 10:00 AM - 12:00 PM', date: 0),
+    Course(id: 3, name: 'History', professor: 'Jim Brown', description: 'Wed 1:00 PM - 3:00 PM', date: 0),
+    Course(id: 4, name: 'Art', professor: 'Sue Green', description: 'Thu 2:00 PM - 4:00 PM', date: 0),
+    Course(id: 5, name: 'Physical Education', professor: 'Tom White', description: 'Fri 8:00 AM - 10:00 AM', date: 0),
   ];
   List<Course> filteredCourses = [];
   TextEditingController searchController = TextEditingController();
@@ -169,14 +169,14 @@ class GradesViewState extends State<GradesView> implements EventObserver {
                           ListTile(
                             leading: const Icon(Icons.person, color: Colors.white),
                             title: Text(
-                              'Teacher: ${filteredCourses[index].teacher}',
+                              'professor: ${filteredCourses[index].professor}',
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
                           ListTile(
-                            leading: const Icon(Icons.schedule, color: Colors.white),
+                            leading: const Icon(Icons.description, color: Colors.white),
                             title: Text(
-                              'Schedule: ${filteredCourses[index].schedule}',
+                              'description: ${filteredCourses[index].description}',
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
