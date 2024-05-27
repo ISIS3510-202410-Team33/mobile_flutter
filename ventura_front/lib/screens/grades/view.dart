@@ -1,46 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:ventura_front/mvvm_components/observer.dart';
-
-class Course {
-  final int id;
-  final String name;
-  final String teacher;
-  final String schedule;
-  final List<Grade> grades;
-
-  Course({
-    required this.id,
-    required this.name,
-    required this.teacher,
-    required this.schedule,
-    this.grades = const [],
-  });
-
-  Course copyWith({List<Grade>? grades}) {
-    return Course(
-      id: id,
-      name: name,
-      teacher: teacher,
-      schedule: schedule,
-      grades: grades ?? this.grades,
-    );
-  }
-}
-
-class Grade {
-  final int id;
-  final int courseId;
-  final String name; 
-  final double grade;
-
-  Grade({
-    required this.id,
-    required this.courseId,
-    required this.name,
-    required this.grade,
-  });
-}
+import 'package:ventura_front/services/models/grade_model.dart';
+import 'package:ventura_front/services/models/course_model.dart';
 
 class GradesView extends StatefulWidget {
   const GradesView({super.key});
