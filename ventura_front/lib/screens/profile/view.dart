@@ -1,9 +1,6 @@
 import "package:flutter/material.dart";
-import "package:flutter/widgets.dart";
 import "package:provider/provider.dart";
 import "package:ventura_front/screens/home/view.dart";
-import "package:ventura_front/services/models/user_model.dart";
-import "package:ventura_front/services/repositories/user_repository.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 
@@ -34,7 +31,7 @@ class ProfileViewContent extends StatefulWidget {
 }
 
 class ProfileViewState extends State<ProfileViewContent> {
-  final UserModel _user = UserViewModel().user;
+  static final UserViewModel _userViewModel = UserViewModel();
   late ProfileViewModel profileViewModel;
   @override
   void initState() {
@@ -42,10 +39,12 @@ class ProfileViewState extends State<ProfileViewContent> {
     loadDatos();
   }
 
+
   void loadDatos() async {
     profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
     await profileViewModel.loadCalorias();
     await profileViewModel.loadPasos();
+    await profileViewModel.loadImage();
     setState(() {});
   }
 
@@ -141,26 +140,29 @@ class ProfileViewState extends State<ProfileViewContent> {
               children: [
                 Header(
                   showUserInfo: false,
-                  user: _user,
+                  user: _userViewModel.user,
                   showHomeIcon: true,
                   showLogoutIcon: true,
                   showNotiIcon: true,
                   homeViewContentState: widget.homeViewContentState,
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF353A40), width: 1.5),
-                  ),
-                  child: const CircleAvatar(
-                    radius: 80,
-                    backgroundImage:
-                        AssetImage('lib/icons/perfil-de-usuario.png'),
+                
+                GestureDetector(
+                  onTap: () async {
+                    await profileViewModel.pickImage();
+                    setState(() {});
+                  },
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: profileViewModel.image != null
+                        ? Image.file(profileViewModel.image!).image
+                        : AssetImage('lib/icons/perfil-de-usuario.png'),
+                    backgroundColor: Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 20),
-                const University(),
+
+
                 const SizedBox(height: 20),
                 Material(
                     color: const Color(0xFF262E32),
@@ -184,8 +186,8 @@ class ProfileViewState extends State<ProfileViewContent> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                    _user.name[0].toUpperCase() +
-                                        _user.name.substring(1),
+                                    _userViewModel.user.name[0].toUpperCase() +
+                                        _userViewModel.user.name.substring(1),
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 20)),
                               ],
@@ -216,9 +218,38 @@ class ProfileViewState extends State<ProfileViewContent> {
                                 const Text("Email",
                                     style: TextStyle(
                                         color: Colors.white, fontSize: 16)),
-                                Text(_user.name,
+                                Text(_userViewModel.user.email,
                                     style: const TextStyle(
                                         color: Colors.grey, fontSize: 14)),
+                              ],
+                            ),
+                          ],
+                        ))),
+                const SizedBox(height: 20),
+                Material(
+                    color: const Color(0xFF262E32),
+                    elevation: 10,
+                    shadowColor: Colors.black,
+                    borderRadius: BorderRadius.circular(60),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: const Color(0xFF262E32),
+                            borderRadius: BorderRadius.circular(60)),
+                        padding: const EdgeInsets.only(
+                            top: 15, bottom: 15, left: 50, right: 50),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.home,
+                                color: Colors.white, size: 30),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Universidad de los Andes",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 16)),
                               ],
                             ),
                           ],
@@ -236,7 +267,7 @@ class ProfileViewState extends State<ProfileViewContent> {
                         profileViewModel.calorias),
                 const SizedBox(height: 10),
                 const Text(
-                    "This information is stored locally and will be deleted at 12:00am of each day.",
+                    "This information is stored locally",
                     softWrap: true,
                     style: TextStyle(
                       color: Colors.grey,

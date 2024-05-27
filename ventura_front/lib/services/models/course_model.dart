@@ -1,9 +1,11 @@
+
 class Course {
   int id;
   String name;
   String description;
   int date;
   String professor;
+
 
 
   Course({
@@ -24,5 +26,6 @@ class Course {
       'professor': professor,
     };
   }
+
 
 }

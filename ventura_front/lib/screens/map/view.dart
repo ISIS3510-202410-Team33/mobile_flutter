@@ -1,12 +1,10 @@
 import "package:flutter/material.dart";
-import "package:flutter/widgets.dart";
 import "package:geolocator/geolocator.dart";
 import "package:ventura_front/screens/home/view.dart";
 import "package:ventura_front/services/view_models/connection_viewmodel.dart";
 import "package:ventura_front/services/view_models/user_viewModel.dart";
 import "package:provider/provider.dart";
 import "package:ventura_front/services/view_models/profile_viewmodel.dart";
-import "package:ventura_front/services/models/calification_model.dart";
 import "package:ventura_front/services/view_models/calification_viewmodel.dart";
 
 import "../../services/models/location_model.dart";
@@ -15,7 +13,6 @@ import "../../services/models/user_model.dart";
 import "../components/header_component.dart";
 
 import "../../mvvm_components/observer.dart";
-import "../../services/repositories/locations_repository.dart";
 import "../../services/view_models/locations_viewmodel.dart";
 
 import "../../services/repositories/gps_repository.dart";
@@ -34,9 +31,6 @@ class MapView extends StatelessWidget {
       child: MapViewContent(homeViewContentState: homeViewContentState),
     );
   }
-
-  
-  
   
 }
 
@@ -50,12 +44,15 @@ class MapViewContent extends StatefulWidget {
 }
 
 class MapViewState extends State<MapViewContent> implements EventObserver {
-  Position? position;
 
+  Position? position;
   GpsRepository gps = GpsRepository.getState();
+
 
   final LocationsViewModel _viewModel = LocationsViewModel();
   final CalificationViewModel _viewModelCalifications = CalificationViewModel();
+  final LocationsViewModel _locationsViewModel = LocationsViewModel();
+
   late ProfileViewModel profileViewModel;
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
 
@@ -98,30 +95,32 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
   }
 
   void madeConnection() {
-    print("Map View made connection");
 
-    _viewModel.subscribe(this);
+    _locationsViewModel.subscribe(this);
     _connectionViewModel.subscribe(this);
-    _viewModel.getLocations();
+    _locationsViewModel.getLocationsCache();
     _connectionViewModel.isInternetConnected().then((value) {
+      if(value){
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        _locationsViewModel.updateBestRatedLocationNet();
+        _locationsViewModel.updateRecommendedLocationsNet(user.id);
+      }
+      else{
+        _locationsViewModel.updateBestRatedLocationCache();
+        _locationsViewModel.updateRecommendedLocationsCache();
+        notify(ConnectionEvent(connection: false));
+      }
       setState(() {
         _hasConnection = value;
       });
-      if(value){
-        _viewModel.updateBestRatedLocation();
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      }
-      else{
-        _viewModel.updateRecommendedLocationsCache();
-        notify(ConnectionEvent(connection: false));
-      }
+      
     });
   }
 
   @override
   void dispose() {
     super.dispose();
-    _viewModel.unsubscribe(this);
+    _locationsViewModel.unsubscribe(this);
     _connectionViewModel.unsubscribe(this);
 
   }
@@ -134,17 +133,8 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       });
     } else if (event is LocationsLoadedEvent) {
       if (event.success){
-          if (_hasConnection && _viewModel.updatings > 0){
-            print("Actualizando por red - pidiendo recomendados");
-            _viewModel.updateRecommendedLocationsNet(user.id);
-            _viewModel.updatings = 0;
-          }
-          else {
-            print("Actualizando por cache - pidiendo recomendados");
-            _viewModel.updateRecommendedLocationsCache();
-          }
           setState(() {
-            locationWidgets = getUpdatedLocationsList();
+            locationWidgets = getUpdatedLocationsWidgetList();
             _isLoading = false;
           });
       }
@@ -153,27 +143,17 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
         print("Error loading locations");
       }
     }
-      else if (event is LocationFrequencyUpdateEvent) {
-      if (event.success) {
-        print("Location frequency updated");
-      } else {
-        print("Error updating location frequency");
-      }
+      else if (event is LocationsUpdateEvent) {
+      if (event.success && !showAllLocationsButton) {
+        setState(() {
+          locationWidgets = getUpdatedLocationsWidgetList();
+        });
+      } 
     }
-      else if (event is UpdateRecommendedLocationsEvent) {
-        if (event.success) {
-          setState(() {
-            locationWidgets = getUpdatedLocationsList();
-          });
-          print("Recommended locations updated");
-        } else {
-          print("Error updating recommended locations");
-        }
-      }
-      else if (event is ConnectionEvent) {
+      else if (event is ConnectionEvent && event.connection != _hasConnection) {
         setState(() {
           _hasConnection = event.connection;
-          locationWidgets = getUpdatedLocationsList();
+          locationWidgets = getUpdatedLocationsWidgetList();
         });
         if (event.connection) {
           ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -194,15 +174,6 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
               backgroundColor: Colors.red,
             ),
           );
-        }
-      } else if (event is UpdateBestRatedLocationsEvent) {
-        if (event.success) {
-          setState(() {
-            locationWidgets = getUpdatedLocationsList();
-          },);
-          print("Best rated location updated");
-        } else {
-          print("Error updating best rated location");
         }
       }
     }
@@ -229,7 +200,7 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
     }
   }
 
-  List<Widget> getRecommendedWidget(location) {
+  Widget getRecommendedWidget(location) {
     List<Widget> widgets = [];
     if (location.recommended ?? false) {
       widgets.add(const Icon(Icons.recommend, color: Colors.white, size: 30));
@@ -237,13 +208,18 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       widgets.add(const Text("Recommended location",
           style: TextStyle(color: Colors.white, fontSize: 14)));
       widgets.add(const Spacer());
-      return widgets;
+      return Column(
+        children: [
+          Row( children: widgets),
+          const SizedBox(height: 10)
+        ],
+      );
     } else {
-      return [];
+      return const SizedBox();
     }
   }
 
-  List<Widget> getBestRatedWidget(location){
+  Widget getBestRatedWidget(location){
     List<Widget> widgets = [];
     if (location.bestRated ?? false) {
       widgets.add(const Icon(Icons.star, color: Colors.yellow, size: 30));
@@ -251,251 +227,278 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
       widgets.add(const Text("Best rated location",
           style: TextStyle(color: Colors.white, fontSize: 14)));
       widgets.add(const Spacer());
-      return widgets;
+      return Column(
+        children: [
+          Row( children: widgets),
+          const SizedBox(height: 10)
+        ],
+      );
     } else {
-      return [];
+      return const SizedBox();
     }
+
+    
   }
 
   void restart(){
-    _viewModel.getLocationsCache();
+    _locationsViewModel.getLocationsCache();
     if (_hasConnection){
-      _viewModel.updateRecommendedLocationsNet(user.id);
-      _viewModel.updateBestRatedLocation();
+      _locationsViewModel.updateRecommendedLocationsNet(user.id);
+      _locationsViewModel.updateBestRatedLocationNet();
     }
     else{
-      _viewModel.updateRecommendedLocationsCache();
+      _locationsViewModel.updateBestRatedLocationCache();
+      _locationsViewModel.updateRecommendedLocationsCache();
     }
   }
 
   void paintOneLocationById(String id){
-    LocationModel? finalLocation = _viewModel.locations[id];
-    Map<String, LocationModel> locationsLocal = Map();
-    (setState(() {
-      if (finalLocation != null){
+
+    LocationModel? finalLocation = _locationsViewModel.getLocationsBase()[id];
+    Map<String, LocationModel> locationsLocal = {};
+    if (finalLocation != null){
         showAllLocationsButton = true;
-        print(finalLocation.toString());
-        print("Llegó aca");
-          locationsLocal.putIfAbsent(finalLocation.id.toString(), () => finalLocation);
-        _viewModel.locations = locationsLocal;
-        locationWidgets = getUpdatedLocationsList();
-        
+        locationsLocal.putIfAbsent(finalLocation.id.toString(), () => finalLocation);
+        _locationsViewModel.locations = locationsLocal;
       }
-    }));
+    setState(() {
+        locationWidgets = getUpdatedLocationsWidgetList();
+    });
   }
 
  
-  List<Widget> getUpdatedLocationsList() {
+  List<Widget> getUpdatedLocationsWidgetList() {
     List<Widget> locationWidgetsUpdated = [];
+
     for (var location in _viewModel.locations.values) {
       _viewModelCalifications.sendCalification(userId: user.id, locationId: location.id);
+
       locationWidgetsUpdated.add(
         Column(
           children: [
-            Column(
-              // Aqui se agregan las recomendaciones si hay
-              children: [
-                Row(children: getRecommendedWidget(location)),
-                Row(children: getBestRatedWidget(location)),
-                
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    location.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    overflow: TextOverflow
-                        .visible, // Permite que el texto se desborde si es demasiado largo
-                  ),
-                ),
-                Row(
+            Material(
+              color: location.bestRated ?? false ? const Color(0xFF393053) : const Color(0xFF262E32),
+              elevation:10,
+              shadowColor: Colors.black,
+              borderRadius: BorderRadius.circular(60),
+              child: Container(
+                padding: const EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 20),
+                child: Column(
                   children: [
-                    TextButton(
-                        onPressed: () {
-                          if (_hasConnection){
-                            addCalorias(gps.getDistanceLatLon(
-                                location.latitude, location.longitude));
-                            addPasos(gps.getDistanceLatLon(
-                                location.latitude, location.longitude));
-                            gps.launchGoogleMaps(
-                                location.latitude, location.longitude);
-                            _viewModel.updateLocationFrequency(user.id, location.id);
-                            _viewModel.updatings++;
-                            _viewModel.updateRecommendedLocationsNet(user.id);
-                          } 
-                          else{
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("No internet connection"),
-                                  content: const Text("You need an internet connection to locate a place"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: (){
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text("OK"),
-                                    )
-                                  ],
-                                );
-                              },
-                            );
-                          }
-                        },
-                        child: Container(
-                            padding: const EdgeInsets.only(
-                                top: 5, bottom: 5, left: 20, right: 20),
-                            decoration: BoxDecoration(
-                                color: const Color(0xFF3D3B40),
-                                borderRadius: BorderRadius.circular(60)),
-                            child: const Text("Locate",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 15)))),
-                  ],
-                ),
-              ],
-            ),
-            ExpansionTile(
-              title: const Text(
-                'View more information',
-                style: TextStyle(
-                    color: const Color.fromARGB(255, 211, 164, 219),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      // Aqui se agregan las recomendaciones si hay
                       children: [
-                        Text("Green zones: ${location.greenAreas}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14)),
-                        Text("Restaurants: ${location.restaurants}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
+                        getRecommendedWidget(location),
+                        getBestRatedWidget(location),
+                        
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            "Obstructions: ${location.obstructions ? "Sí" : "No"}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14)),
-                        Text("Floors: ${location.floors}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text("Latitude: ${location.latitude} ",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 14)),
-                    Text("Longitude: ${location.longitude}",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 14)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const Text("Distance: ",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 14)),
-                        Text(
-                            setDistance(gps.getDistanceLatLon(
-                                location.latitude, location.longitude)),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const Text("Estimated walking \ntime: ",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 14)),
-                        Text(
-                            setTime(gps.getTimeLatLon(
-                                location.latitude, location.longitude, 0)),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14))
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: () {
-                  if(_hasConnection){
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return const RateIcon();
-                      },
-                    );
-                  }
-                  else{
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text("No internet connection"),
-                          content: const Text("You need an internet connection to rate a place"),
-                          actions: [
+                        Expanded(
+                          child: Text(
+                            location.name,
+                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                            overflow: TextOverflow
+                                .visible, // Permite que el texto se desborde si es demasiado largo
+                          ),
+                        ),
+                        Row(
+                          children: [
                             TextButton(
-                              onPressed: (){
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text("OK"),
-                            )
+                                onPressed: () {
+                                  if (_hasConnection){
+                                    addCalorias(gps.getDistanceLatLon(
+                                        location.latitude, location.longitude));
+                                    addPasos(gps.getDistanceLatLon(
+                                        location.latitude, location.longitude));
+                                    gps.launchGoogleMaps(
+                                        location.latitude, location.longitude);
+                                    _locationsViewModel.updateLocationFrequency(user.id, location.id);
+                                    if (_hasConnection){
+                                      _locationsViewModel.updateBestRatedLocationNet();
+                                    }
+                                  } 
+                                  else{
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: const Text("No internet connection"),
+                                          content: const Text("You need an internet connection to locate a place"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: (){
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text("OK"),
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.only(
+                                        top: 5, bottom: 5, left: 20, right: 20),
+                                    decoration: BoxDecoration(
+                                        color: const Color(0xFF3D3B40),
+                                        borderRadius: BorderRadius.circular(60)),
+                                    child: const Text("Locate",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 15)))),
                           ],
-                        );
-                      },
-                    );
-                  }
-                },
-                child: const Text(
-                  'Rate this location!',
-                  style: TextStyle(
-                      color: Color.fromARGB(255, 135, 230, 139),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    ExpansionTile(
+                      title: const Text(
+                        'Show more information',
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 211, 164, 219),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      children: <Widget>[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Green zones: ${location.greenAreas}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14)),
+                                Text("Restaurants: ${location.restaurants}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                    "Obstructions: ${location.obstructions ? "Sí" : "No"}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14)),
+                                Text("Floors: ${location.floors}",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text("Latitude: ${location.latitude} ",
+                                style:
+                                    const TextStyle(color: Colors.white, fontSize: 14)),
+                            Text("Longitude: ${location.longitude}",
+                                style:
+                                    const TextStyle(color: Colors.white, fontSize: 14)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const Text("Distance: ",
+                                    style:
+                                        TextStyle(color: Colors.white, fontSize: 14)),
+                                Text(
+                                    setDistance(gps.getDistanceLatLon(
+                                        location.latitude, location.longitude)),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const Text("Estimated walking \ntime: ",
+                                    style:
+                                        TextStyle(color: Colors.white, fontSize: 14)),
+                                Text(
+                                    setTime(gps.getTimeLatLon(
+                                        location.latitude, location.longitude, 0)),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14))
+                              ],
+                            ),
+                            const SizedBox(height: 15,)
+                          ],
+                        ),
+                      ],
+                    ),
+                    
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            if(_hasConnection){
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return const RateIcon();
+                                },
+                              );
+                            }
+                            else{
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("No internet connection"),
+                                    content: const Text("You need an internet connection to rate a place"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: (){
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("OK"),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          child: const Text(
+                            'Rate this location!',
+                            style: TextStyle(
+                              //dark purple
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Divider(
+                          color:  Color(0xFF3D3B40),
+                          thickness: 1,
+                          height: 1,
+                          indent: 0,
+                          endIndent: 0,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                    ],),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Divider(
-              color: const Color(0xFF3D3B40),
-              thickness: 1,
-              height: 1,
-              indent: 0,
-              endIndent: 0,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
+              )
+
+            )
+            , const SizedBox(height: 30,)
           ],
-        ),
+        )
+        
       );
     }
     return locationWidgetsUpdated;
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -522,57 +525,91 @@ class MapViewState extends State<MapViewContent> implements EventObserver {
                     showNotiIcon: false,
                     homeViewContentState: widget.homeViewContentState,
                   ),
-                  _hasConnection
-                      ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 20),
-                          const Text("Search for a place to go",
-                              style: TextStyle(color: Colors.white, fontSize: 20)),
-                          const SizedBox(height: 20),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      const Text("Search for a place to go",
+                          style: TextStyle(color: Colors.white, fontSize: 20)),
+                      const SizedBox(height: 20),
 
-                          Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                paintOneLocationById(_viewModel.getSite("green_areas"));
-                              },
-                              child: const Text("Search Green Zone"),
-                            ),
-
-                            const SizedBox(width: 10),
-
-                            ElevatedButton(
-                              onPressed: () {
-                                paintOneLocationById(_viewModel.getSite("restaurants"));
-                              },
-                              child: const Text("Search Restaurant"),
-                            ),
-                          ],
-                          
+                      Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            paintOneLocationById(_locationsViewModel.getSite("green_areas"));
+                          },
+                          child: const Text("Search Green Zone"),
                         ),
-                        const SizedBox(height: 20),
-                        showAllLocationsButton && _hasConnection
-                            ? ElevatedButton(
-                                onPressed: () {
-                                  (setState( () => showAllLocationsButton = false));
-                                  restart();
-                                },
-                                child: const Text("Show all locations"),
-                              )
-                            : const SizedBox(),
 
+                        const SizedBox(width: 10),
 
-                        ],
-                        )
-                      : const SizedBox(),
+                        ElevatedButton(
+                          onPressed: () {
+                            paintOneLocationById(_locationsViewModel.getSite("restaurants"));
+                          },
+                          child: const Text("Search Restaurant"),
+                        ),
+                      ],
+                      
+                    ),
+                    const SizedBox(height: 20),
+                    showAllLocationsButton 
+                        ? ElevatedButton(
+                            onPressed: () {
+                              (setState( () => showAllLocationsButton = false));
+                              restart();
+                            },
+                            child: const Text("Show all locations"),
+                          )
+                        : const SizedBox(),
+                    ],
+                    )
+                      ,
                   const SizedBox(height: 20),
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : Expanded(
-                          child: SingleChildScrollView(
-                              child: Column(children: locationWidgets,)))
+                          child: RefreshIndicator(
+                            onRefresh: (){
+                              if (_hasConnection){
+                                if (showAllLocationsButton){
+                                  setState(() {
+                                    showAllLocationsButton = false;
+                                  });;
+                                }
+                                _locationsViewModel.loadLocations(user.id);
+                                _locationsViewModel.updateBestRatedLocationNet();
+                                _locationsViewModel.updateRecommendedLocationsNet(user.id);
+                                
+                              }
+                              else{
+                                //Show no internet message
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text("No internet connection"),
+                                      content: const Text("You need an internet connection to reload the locations"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: (){
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("OK"),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                );
+            
+                              }
+                              return Future.delayed(const Duration(seconds: 1));
+                            },
+                            child: SingleChildScrollView(
+                                child: Column(children: locationWidgets,))
+                          ))
                 ],
               )),
         ));

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/map/view.dart';
 import 'package:ventura_front/screens/profile/view.dart';
+import 'package:ventura_front/screens/schedule/view.dart';
 import 'package:ventura_front/screens/settings/view.dart';
-import 'package:ventura_front/sensors_components/proximity_sensor.dart';
+import 'package:ventura_front/screens/grades/view.dart';
 
 class MyButton extends StatelessWidget {
   final IconData iconData;
@@ -26,9 +27,13 @@ class MyButton extends StatelessWidget {
     return InkWell(
         onTap: () async {
           if (title == "Map") {
-            await Navigator.push(context, 
-                MaterialPageRoute(builder: (context) =>  MapView(homeViewContentState: homeViewContentState,)));
-                homeViewContentState.madeConnection();
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MapView(
+                          homeViewContentState: homeViewContentState,
+                        )));
+            homeViewContentState.madeConnection();
           } else if (title == "Schedule") {
             print("Schedule");
           } else if (title == "Settings") {
@@ -36,8 +41,19 @@ class MyButton extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => SettingsView()));
             homeViewContentState.madeConnection();
           } else if (title == "Profile") {
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ProfileView(
+                        homeViewContentState: homeViewContentState)));
+            homeViewContentState.madeConnection();
+          } else if (title == "Grades") {
             await Navigator.push(context,
-                MaterialPageRoute(builder: (context) => ProfileView(homeViewContentState: homeViewContentState)));
+                MaterialPageRoute(builder: (context) => const GradesView()));
+            homeViewContentState.madeConnection();
+          } else if (title == "Schedule") {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => ScheduleView()));
             homeViewContentState.madeConnection();
           }
         },

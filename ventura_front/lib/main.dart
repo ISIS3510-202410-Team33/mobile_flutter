@@ -7,8 +7,8 @@ import 'package:ventura_front/firebase_options.dart';
 import 'package:ventura_front/screens/loading/view.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ventura_front/screens/settings/components/theme_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:ventura_front/sensors_components/proximity_sensor.dart';
+import 'package:provider/provider.dart';
 
 
 
@@ -54,8 +54,7 @@ class MainApp extends StatelessWidget {
 }
 
 void deleteSharedPreferencesEveryMinute() {
-  Timer.periodic(Duration(seconds: 10), (timer) async {
-    print("##################");
+  Timer.periodic(const Duration(seconds: 10), (timer) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('weather');
   });

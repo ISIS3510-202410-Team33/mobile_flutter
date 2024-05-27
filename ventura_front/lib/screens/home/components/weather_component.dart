@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import '../../../services/models/weather_model.dart';
 
 class Weather extends StatelessWidget {
@@ -6,6 +7,8 @@ class Weather extends StatelessWidget {
   const Weather({super.key, required this.weather});
 
   Weather.noSignal() : weather = null;
+
+  
 
   String firstLetterUppercase(String text) {
     return text[0].toUpperCase() + text.substring(1);
@@ -47,7 +50,7 @@ class Weather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!weather!.signal) {
+    if (!weather!.signal ) {
       return Container(
           decoration: BoxDecoration(
             gradient: getBackgroundGradient(),

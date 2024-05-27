@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:ventura_front/mvvm_components/observer.dart';
+import 'package:ventura_front/services/models/location_model.dart';
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/locations_viewmodel.dart';
 
@@ -11,15 +12,39 @@ class NotificationView extends StatefulWidget {
   _NotificationViewState createState() => _NotificationViewState();
 }
 
-class _NotificationViewState extends State<NotificationView> {
+class _NotificationViewState extends State<NotificationView>  implements EventObserver{
   bool _hasConnection = true;
   final LocationsViewModel _viewModel = LocationsViewModel();
   String? _recommendedLocationName;
 
+  void _findRecommendedLocation() {
+    if (_viewModel.recommendedList.isNotEmpty) {
+      print("Recommended list: ${_viewModel.recommendedList}");
+      String firstLocation = _viewModel.recommendedList.first;
+      LocationModel? firstLocationModel = _viewModel.locations[firstLocation];
+      setState(() {
+        if (firstLocationModel != null){
+          _recommendedLocationName = firstLocationModel.name;
+        } 
+      });
+    }
+  }
+
+  void _launchURL() async {
+    if (_recommendedLocationName != null) {
+      final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/");
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } 
+  }
+
   @override
   void initState() {
     super.initState();
-    _viewModel.getLocations(); 
+    _viewModel.getLocationsCache(); 
     _findRecommendedLocation();
   }
 
@@ -31,6 +56,7 @@ class _NotificationViewState extends State<NotificationView> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

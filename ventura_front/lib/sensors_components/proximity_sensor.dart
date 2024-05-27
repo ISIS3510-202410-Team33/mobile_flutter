@@ -41,7 +41,6 @@ class _ProximityState extends State<Proximity> {
         FlutterError.dumpErrorToConsole(details);
       }
     };
-
     await ProximitySensor.setProximityScreenOff(true).onError((error, stackTrace) {
       print("could not enable screen off functionality");
       return null;
@@ -50,6 +49,7 @@ class _ProximityState extends State<Proximity> {
     _streamSubscription = ProximitySensor.events.listen((int event) {
       setState(() {
         _isNear = (event > 0) ? true : false;
+        
       });
     });
   }

@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:ventura_front/screens/login/view.dart';
-import 'package:ventura_front/services/repositories/locations_repository.dart';
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
+import 'package:ventura_front/services/view_models/locations_viewmodel.dart';
 import 'package:ventura_front/services/view_models/user_viewModel.dart';
 
 class SignOutComponent extends StatelessWidget {
 
   static final UserViewModel _userViewModel = UserViewModel();
   static final ConnectionViewModel  _connectionViewModel = ConnectionViewModel();
-  static final LocationRepository _locationsRepository = LocationRepository();
+  static final LocationsViewModel _locationsViewModel = LocationsViewModel();
+
+  Future<bool> verifyInternetConnection() async{
+    return await _connectionViewModel.isInternetConnected();
+  }
+
+  bool signOut(isLoading, context){
+    bool newLoading = isLoading; 
+    if (!isLoading){
+      newLoading = true;
+      _connectionViewModel.isInternetConnected().then((value) {
+        newLoading = value;
+        if (value){  
+          _userViewModel.signOut();
+          _locationsViewModel.cleanCache();
+          _locationsViewModel.restartLocations();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
+            ),
+          );
+        }
+      });
+    }
+    return newLoading;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +53,9 @@ class SignOutComponent extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.logout, color: Colors.white),
-              onPressed: !isLoading && _connectionViewModel.isConnected() ? () {
-                _userViewModel.signOut();
-                isLoading = true;
-                _locationsRepository.cleanCache();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
-                  ),
-                );
-              } : null,
+              onPressed: (){
+                isLoading = signOut(isLoading, context);
+              }
             )
           ],
         ));

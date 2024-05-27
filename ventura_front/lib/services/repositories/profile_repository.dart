@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+
 
 class ProfileRepository {
   int pasos = 1000;
   int calorias = 40;
   int pasosHoy = 0;
   int caloriasHoy = 0;
+  File? _image;
+  File? get image => _image;
 
   Future<void> loadPasos() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -54,5 +60,28 @@ class ProfileRepository {
     int n = (distance * 0.062).toInt();
     caloriasHoy = (prefs.getInt('caloriasHoy') ?? 0) + n;
     await prefs.setInt('caloriasHoy', caloriasHoy);
+  }
+
+    Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      _image = File(pickedImage.path);
+      saveImage(File(pickedImage.path));
+    }
+  }
+
+  Future<void> saveImage(File image) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('avatar_image_path', image.path);
+  }
+
+  Future<void> loadImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final imagePath = prefs.getString('avatar_image_path');
+    if (imagePath != null) {
+      _image = File(imagePath);
+    }
   }
 }
