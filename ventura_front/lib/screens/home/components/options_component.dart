@@ -26,7 +26,6 @@ class OptionsState extends State<Options> {
     DataWidget("Grades", Icons.grading, Colors.white, "Set your grades"),
     DataWidget("Profile", Icons.person, Colors.white, "Set your profile"),
     DataWidget("Settings", Icons.settings, Colors.white, "Set your settings"),
-    DataWidget("Settings", Icons.settings, Colors.white, "Set your settings"),
 
   ];
   var optionWidgets = <Widget>[];
