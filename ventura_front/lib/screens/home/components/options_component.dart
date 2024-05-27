@@ -22,11 +22,10 @@ class DataWidget {
 class OptionsState extends State<Options> {
   var dataWidgets = [
     DataWidget("Map", Icons.home, Colors.white, "Navigate Through campus"),
-    DataWidget("Schedule", Icons.schedule, Colors.white, "Watch your courses"),
+    DataWidget("Schedule", Icons.schedule, Colors.white, "Watch your projects"),
     DataWidget("Grades", Icons.grading, Colors.white, "Set your grades"),
     DataWidget("Profile", Icons.person, Colors.white, "Set your profile"),
     DataWidget("Settings", Icons.settings, Colors.white, "Set your settings"),
-
   ];
   var optionWidgets = <Widget>[];
 
