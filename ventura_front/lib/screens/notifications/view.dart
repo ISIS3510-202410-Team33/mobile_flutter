@@ -93,32 +93,15 @@ class _NotificationViewState extends State<NotificationView>  implements EventOb
                 onTap: _hasConnection ? () {
                   _launchURL();
                 } : null, // Desactiva el onTap si no hay conexión
-                child: Padding(padding: const EdgeInsets.only(left: 20, right: 20),
-                child: _recommendedLocationName != null
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Hello! We recommend you to visit the building $_recommendedLocationName',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              overflow: TextOverflow.ellipsis
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Clic here for more information',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.blue,
-                              overflow: TextOverflow.ellipsis
-                            ),
-                          ),
-                        ],
-                      )
-                    : const Text('There are no recomendations at this moment'), 
-                )
+                child: Text(
+                  "Your most recommended location is: $_recommendedLocationName",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
               ),
             ),
           ),
@@ -127,5 +110,25 @@ class _NotificationViewState extends State<NotificationView>  implements EventOb
     );
   }
 
-  
+  void _findRecommendedLocation() {
+    if (_viewModel.locations.isNotEmpty) {
+      var firstLocation = _viewModel.locations.values.first;
+      setState(() {
+        _recommendedLocationName = firstLocation.name;
+      });
+    }
+  }
+
+  void _launchURL() async {
+    if (_recommendedLocationName != null && _recommendedLocationName!.toLowerCase().contains('ml')) {
+      final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/");
+      if (await canLaunch(url.toString())) {
+        await launch(url.toString());
+      } else {
+        throw 'Could not launch $url';
+      }
+    } else {
+      print('Location not supported');
+    }
+  }
 }
