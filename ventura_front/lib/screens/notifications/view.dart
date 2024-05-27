@@ -110,25 +110,4 @@ class _NotificationViewState extends State<NotificationView>  implements EventOb
     );
   }
 
-  void _findRecommendedLocation() {
-    if (_viewModel.locations.isNotEmpty) {
-      var firstLocation = _viewModel.locations.values.first;
-      setState(() {
-        _recommendedLocationName = firstLocation.name;
-      });
-    }
-  }
-
-  void _launchURL() async {
-    if (_recommendedLocationName != null && _recommendedLocationName!.toLowerCase().contains('ml')) {
-      final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/");
-      if (await canLaunch(url.toString())) {
-        await launch(url.toString());
-      } else {
-        throw 'Could not launch $url';
-      }
-    } else {
-      print('Location not supported');
-    }
-  }
 }
