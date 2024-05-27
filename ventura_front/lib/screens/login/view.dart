@@ -125,6 +125,8 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
   @override
   Widget build(BuildContext context) {
+    final _phoneHeight = MediaQuery.of(context).size.height;
+    final _phoneWidth = MediaQuery.of(context).size.width;
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -146,7 +148,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                 child: SingleChildScrollView(
 
                   child: Container(
-                    height: MediaQuery.of(context).size.height,
+                    height: _phoneHeight,
                     alignment: Alignment.bottomCenter,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -188,8 +190,8 @@ class LoginViewState extends State<LoginView> implements EventObserver{
 
                         ),
                         Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.7,
+                          width: _phoneWidth,
+                          height: _phoneHeight * 0.7,
                           alignment: Alignment.centerLeft,
                           decoration: const BoxDecoration(
                             color: Colors.white,
@@ -247,7 +249,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                 ),
                                 const SizedBox(height: 28),
                                 SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.65,
+                                  width: _phoneWidth * 0.65,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
@@ -291,7 +293,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                         Align(
                                           alignment: Alignment.center,
                                           child: SizedBox(
-                                            width: MediaQuery.of(context).size.width * 0.3,
+                                            width: _phoneWidth * 0.3,
                                             height: 50,
                                             child: ElevatedButton(
 
@@ -324,7 +326,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                         Align(
                                           alignment: Alignment.center,
                                           child: SizedBox(
-                                            width: MediaQuery.of(context).size.width * 0.3,
+                                            width: _phoneWidth * 0.3,
                                             height: 50,
                                             child: ElevatedButton(
 
