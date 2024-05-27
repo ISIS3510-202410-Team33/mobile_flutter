@@ -10,8 +10,6 @@ import '../components/header_component.dart';
 import './components/weather_component.dart';
 import './components/university_component.dart';
 import './components/options_component.dart';
-import 'package:ventura_front/sensors_components/proximity_sensor.dart';
-
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
@@ -199,7 +197,9 @@ class HomeViewContentState extends State<HomeViewContent>
                 const SizedBox(height: 30),
                 const University(),
                 const SizedBox(height: 10),
-                Options( homeViewContentState: this,),
+                Expanded( // Envuelve el widget Options en Expanded
+                  child: Options(homeViewContentState: this),
+                ),
               ],
             ),
           ),

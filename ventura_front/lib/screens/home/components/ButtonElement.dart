@@ -3,7 +3,7 @@ import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/map/view.dart';
 import 'package:ventura_front/screens/profile/view.dart';
 import 'package:ventura_front/screens/settings/view.dart';
-import 'package:ventura_front/sensors_components/proximity_sensor.dart';
+import 'package:ventura_front/screens/grades/view.dart';
 
 class MyButton extends StatelessWidget {
   final IconData iconData;
@@ -38,6 +38,10 @@ class MyButton extends StatelessWidget {
           } else if (title == "Profile") {
             await Navigator.push(context,
                 MaterialPageRoute(builder: (context) => ProfileView(homeViewContentState: homeViewContentState)));
+            homeViewContentState.madeConnection();
+          } else if (title == "Grades") {
+            await Navigator.push(context, 
+              MaterialPageRoute(builder: (context) => const GradesView()));
             homeViewContentState.madeConnection();
           }
         },

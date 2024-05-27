@@ -17,62 +17,59 @@ class DataWidget {
   String description;
 
   DataWidget(this.name, this.icon, this.color, this.description);
-
 }
+
 class OptionsState extends State<Options> {
-
-  
-
   var dataWidgets = [
     DataWidget("Map", Icons.home, Colors.white, "Navigate Through campus"),
     DataWidget("Schedule", Icons.schedule, Colors.white, "Watch your courses"),
+    DataWidget("Grades", Icons.grading, Colors.white, "Set your grades"),
     DataWidget("Profile", Icons.person, Colors.white, "Set your profile"),
-    DataWidget("Settings", Icons.settings, Colors.white, "Set your settings"),    
+    DataWidget("Settings", Icons.settings, Colors.white, "Set your settings"),
+
   ];
   var optionWidgets = <Widget>[];
 
-
-  void initializeOptions (){
-    for (var element in dataWidgets) { 
-      optionWidgets.add(
-        const SizedBox(height: 20,)
-      );
+  void initializeOptions() {
+    for (var element in dataWidgets) {
+      optionWidgets.add(const SizedBox(height: 20));
       optionWidgets.add(
         Material(
-                color: const Color(0xFF262E32),
-                elevation:10,
-                shadowColor: Colors.black,
-                borderRadius: BorderRadius.circular(60),
-                child: MyButton(
-                  color: element.color, 
-                  iconData: element.icon, 
-                  title: element.name, 
-                  description: element.description,
-                  homeViewContentState: widget.homeViewContentState,
-                  ),
-              )
+          color: const Color(0xFF262E32),
+          elevation: 10,
+          shadowColor: Colors.black,
+          borderRadius: BorderRadius.circular(60),
+          child: MyButton(
+            color: element.color,
+            iconData: element.icon,
+            title: element.name,
+            description: element.description,
+            homeViewContentState: widget.homeViewContentState,
+          ),
+        ),
       );
     }
-  } 
+  }
 
   @override
   void initState() {
     super.initState();
     initializeOptions();
   }
+
   @override
   Widget build(BuildContext context) {
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(60),
-      ),
-
-      child: Column(
+    return SingleChildScrollView(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(60),
+        ),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: optionWidgets,
         ),
+      ),
     );
   }
-} 
+}

@@ -4,13 +4,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ventura_front/screens/settings/components/theme_provider.dart';
 
 class SettingsView extends StatelessWidget {
+  const SettingsView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of
     <ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: const Text('Settings'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -22,7 +24,7 @@ class SettingsView extends StatelessWidget {
             right: 20,
             bottom: 20,
           ),
-            child: Text(
+            child: const Text(
               'Preferences',
               style: TextStyle(
                 fontSize: 20,
@@ -31,7 +33,7 @@ class SettingsView extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text('Theme'),
+            title: const Text('Theme'),
             subtitle: Text(
               themeProvider.getTheme() == ThemeData.dark()
                   ? 'Dark Mode'

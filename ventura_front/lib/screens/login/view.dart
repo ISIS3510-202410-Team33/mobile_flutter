@@ -290,7 +290,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                         children: [
                                         Align(
                                           alignment: Alignment.center,
-                                          child: Container(
+                                          child: SizedBox(
                                             width: MediaQuery.of(context).size.width * 0.3,
                                             height: 50,
                                             child: ElevatedButton(
@@ -323,7 +323,7 @@ class LoginViewState extends State<LoginView> implements EventObserver{
                                         const SizedBox(width: 10,),
                                         Align(
                                           alignment: Alignment.center,
-                                          child: Container(
+                                          child: SizedBox(
                                             width: MediaQuery.of(context).size.width * 0.3,
                                             height: 50,
                                             child: ElevatedButton(
