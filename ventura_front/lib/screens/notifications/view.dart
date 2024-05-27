@@ -19,21 +19,17 @@ class _NotificationViewState extends State<NotificationView> {
   @override
   void initState() {
     super.initState();
-    _viewModel.getLocations();
+    _viewModel.getLocations(); 
     _findRecommendedLocation();
   }
 
   @override
-  void notify(ViewEvent event) {  
+  void notify(ViewEvent event) {
     if (event is ConnectionEvent) {
-      if (event.connection){
-        setState(()=> _hasConnection = true);
-      }
-      else {
-        setState(()=> _hasConnection = false);
-      }
+      setState(() {
+        _hasConnection = event.connection;
+      });
     }
-
   }
 
   @override
@@ -63,20 +59,18 @@ class _NotificationViewState extends State<NotificationView> {
                     color: Color.fromARGB(255, 160, 159, 159).withOpacity(0.5),
                     spreadRadius: 5,
                     blurRadius: 7,
-                    offset: Offset(0, 3), // Cambia la posición de la sombra
+                    offset: const Offset(0, 3), // Cambia la posición de la sombra
                   ),
                 ],
               ),
               child: GestureDetector(
-                onTap: _hasConnection? () {
+                onTap: _hasConnection ? () {
                   _launchURL();
-                }: null,
+                } : null, // Desactiva el onTap si no hay conexión
                 child: Text(
-                  _recommendedLocationName != null
-                      ? "Your most recommended location is: $_recommendedLocationName"
-                      : "You don't have notifications",
-                    textAlign: TextAlign.center,
-                  style: TextStyle(
+                  "Your most recommended location is: $_recommendedLocationName",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.none,
@@ -93,24 +87,22 @@ class _NotificationViewState extends State<NotificationView> {
   void _findRecommendedLocation() {
     if (_viewModel.locations.isNotEmpty) {
       var firstLocation = _viewModel.locations.values.first;
-      _recommendedLocationName = firstLocation.name;
+      setState(() {
+        _recommendedLocationName = firstLocation.name;
+      });
     }
   }
 
   void _launchURL() async {
-    if (_recommendedLocationName != null) {
-      if (_recommendedLocationName!.toLowerCase().contains('ml')) {
-        final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/");
-        if (await canLaunch(url.toString())) {
-          await launch(url.toString());
-        } else {
-          throw 'Could not launch $url';
-        }
+    if (_recommendedLocationName != null && _recommendedLocationName!.toLowerCase().contains('ml')) {
+      final url = Uri.https('campusinfo.uniandes.edu.co', "/es/recursos/edificios/bloqueml/");
+      if (await canLaunch(url.toString())) {
+        await launch(url.toString());
       } else {
-        print('Location not supported');
+        throw 'Could not launch $url';
       }
     } else {
-      print("You don't have notifications");
+      print('Location not supported');
     }
   }
 }
