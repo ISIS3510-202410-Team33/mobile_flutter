@@ -1,21 +1,38 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+
+import 'package:sqflite/sqflite.dart';
 import 'package:ventura_front/services/models/course_model.dart';
+import 'package:ventura_front/services/repositories/sqflite_db.dart';
 
 class CoursesRepository {
-  Future<void> sendCourse(Course course) async {
-    final jsonData = course.toJson();
+  static final LocalDB _dbManager = LocalDB.instance;
+  static Future<Database> get database async => _dbManager.database;
+  static final CoursesRepository instance = CoursesRepository._privateConstructor();
 
-    final response = await http.post(
-      Uri.parse('/api/user_courses/'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(jsonData),
-    );
+  CoursesRepository._privateConstructor();
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to send rating');
-    }
+  Future<void> saveCourse(Course course) async {
+    Database db = await database;
+    await db.insert('courses', course.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Course>> getCourses() async {
+    Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('courses');
+
+    return List.generate(maps.length, (i) {
+      return Course.fromJson(maps[i]);
+    });
+  }
+
+
+
+  Future<void> deleteCourse(int courseId) async {
+    Database db = await database;
+    await db.delete('courses', where: 'id = ?', whereArgs: [courseId]);
+  }
+
+  Future<void> updateCourse(int gradeId, Course course) async {
+    Database db = await database;
+    await db.update('grades', course.toJson(), where: 'id = ?', whereArgs: [gradeId]);
   }
 }

@@ -1,21 +1,21 @@
 import 'package:ventura_front/services/models/grade_model.dart';
 
 class Course {
-  int id;
+  int? id;
   String name;
-  String description;
-  int date;
+  String room;
+  String schedule;
   String professor;
   List<Grade> grades;
 
 
 
   Course({
-    required this.id,
+    this.id,
     required this.name,
-    required this.description,
-    required this.date,
+    required this.room,
     required this.professor,
+    required this.schedule,
     this.grades = const [],
   });
 
@@ -24,9 +24,9 @@ class Course {
     return {
       'id': id,
       'name': name,
-      'description': description,
-      'date': date,
+      'room': room,
       'professor': professor,
+      'schedule': schedule,
     };
   }
 
@@ -34,24 +34,28 @@ class Course {
     return Course(
       id: json['id'],
       name: json['name'],
-      description: json['description'],
-      date: json['date'],
+      room: json['room'],
       professor: json['professor'],
+      schedule: json['schedule'],
     );
   }
 
   copyWith({
+    int? id,
+    String? name,
+    String? room,
+    String? professor,
+    String? schedule,
     List<Grade>? grades,
   }) {
     return Course(
       id: id ?? this.id,
       name: name ?? this.name,
-      description: description ?? this.description,
-      date: date ?? this.date,
+      room: room ?? this.room,
       professor: professor ?? this.professor,
+      schedule: schedule ?? this.schedule,
       grades: grades ?? this.grades,
     );
   }
-
 
 }

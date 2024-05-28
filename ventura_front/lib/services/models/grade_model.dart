@@ -1,11 +1,11 @@
 class Grade {
-  final int id;
+  int? id;
   final int courseId;
   final double grade;
   final String name;
 
   Grade({
-    required this.id,
+    this.id,
     required this.courseId,
     required this.grade,
     required this.name,
