@@ -169,14 +169,14 @@ class GradesViewState extends State<GradesView> implements EventObserver {
                           ListTile(
                             leading: const Icon(Icons.person, color: Colors.white),
                             title: Text(
-                              'professor: ${filteredCourses[index].professor}',
+                              'Teacher: ${filteredCourses[index].professor}',
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
                           ListTile(
                             leading: const Icon(Icons.description, color: Colors.white),
                             title: Text(
-                              'description: ${filteredCourses[index].description}',
+                              'Schedule: ${filteredCourses[index].description}',
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
