@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:ventura_front/screens/login/view.dart';
+import 'package:ventura_front/services/repositories/sqflite_db.dart';
 import 'package:ventura_front/services/view_models/connection_viewmodel.dart';
 import 'package:ventura_front/services/view_models/locations_viewmodel.dart';
 import 'package:ventura_front/services/view_models/user_viewModel.dart';
@@ -9,6 +11,9 @@ class SignOutComponent extends StatelessWidget {
   static final UserViewModel _userViewModel = UserViewModel();
   static final ConnectionViewModel  _connectionViewModel = ConnectionViewModel();
   static final LocationsViewModel _locationsViewModel = LocationsViewModel();
+  static final LocalDB _dbManager = LocalDB.instance;
+
+
 
   Future<bool> verifyInternetConnection() async{
     return await _connectionViewModel.isInternetConnected();
@@ -24,6 +29,8 @@ class SignOutComponent extends StatelessWidget {
           _userViewModel.signOut();
           _locationsViewModel.cleanCache();
           _locationsViewModel.restartLocations();
+          _dbManager.close();
+          _dbManager.delete();
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => const LoginView(), // Reemplaza LoginView() con la pantalla siguiente
