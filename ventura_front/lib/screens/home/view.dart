@@ -149,7 +149,11 @@ class HomeViewContentState extends State<HomeViewContent>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return 
+    Stack(
+    children:
+    [
+      Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF16171B), Color(0xFF353A40)],
@@ -204,7 +208,27 @@ class HomeViewContentState extends State<HomeViewContent>
             ),
           ),
         ),
-      );
+      ),
+      Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.transparent, Color(0xFF16171B), Color(0xFF16171B)],
+                        stops: [0, 0.7, 1],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                    child: const SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                    )
+                ),)
+      ]);
   }
 
 }
