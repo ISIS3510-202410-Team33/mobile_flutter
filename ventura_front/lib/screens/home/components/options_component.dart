@@ -48,6 +48,11 @@ class OptionsState extends State<Options> {
         ),
       );
     }
+    optionWidgets.add(
+      const SizedBox(
+        height: 70,
+      ),
+    );
   }
 
   @override
