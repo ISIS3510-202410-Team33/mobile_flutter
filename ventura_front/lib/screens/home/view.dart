@@ -38,7 +38,6 @@ class HomeViewContentState extends State<HomeViewContent>
   static final UserViewModel _userViewModel = UserViewModel();
   bool _hasConnection = true;
   bool _showGradient = true;
-  final GlobalKey snackBarKey = GlobalKey();
 
   Future<Position> determinePosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
