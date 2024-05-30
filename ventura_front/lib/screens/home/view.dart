@@ -37,6 +37,8 @@ class HomeViewContentState extends State<HomeViewContent>
   static final ConnectionViewModel _connectionViewModel = ConnectionViewModel();
   static final UserViewModel _userViewModel = UserViewModel();
   bool _hasConnection = true;
+  bool _showGradient = true;
+  final GlobalKey snackBarKey = GlobalKey();
 
   Future<Position> determinePosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -78,6 +80,15 @@ class HomeViewContentState extends State<HomeViewContent>
     madeConnection();
   }
 
+  Future<void> printGradientAfterDelay() async {
+    Future<dynamic> future =  Future.delayed(const Duration(milliseconds: 3400));
+    future.then((value) {
+      setState(() {
+        _showGradient = true;
+      });
+    });
+  }
+
   void madeConnection() {
     print("Home View");
 
@@ -107,21 +118,30 @@ class HomeViewContentState extends State<HomeViewContent>
 
   
   @override
-  void notify(ViewEvent event) {
-    if (event is ConnectionEvent ) {
+  void notify(ViewEvent event ) {
+    if (event is ConnectionEvent && _hasConnection != event.connection ) {
+      setState(() {
+        _showGradient = false;
+      });
       if (event.connection ) {
         print("Conexión establecida");
+        
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             duration: Duration(seconds: 3),
             backgroundColor: Colors.green,
             content: Text('You are connected again'),
+
+            
           ),
+          
         );
+        printGradientAfterDelay();
         setState(() {
           if (weatherViewModel.weatherData != null) {
             weatherViewModel.weatherData!.signal = true;
+
           }
         });
         getWeather();
@@ -209,25 +229,27 @@ class HomeViewContentState extends State<HomeViewContent>
           ),
         ),
       ),
-      Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.transparent, Color(0xFF16171B), Color(0xFF16171B)],
-                        stops: [0, 0.7, 1],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                    child: const SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                    )
-                ),)
+      _showGradient ? Positioned(
+
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.transparent, Color(0xFF16171B), Color(0xFF16171B)],
+              stops: [0, 0.7, 1],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: const SizedBox(
+            height: 30,
+            width: double.infinity,
+          )
+      ),) 
+      : const SizedBox(),
       ]);
   }
 
