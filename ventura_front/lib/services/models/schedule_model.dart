@@ -1,17 +1,15 @@
 class Schedule {
   final int id;
-  final String url;
   DateTime fecha;
   final String titulo;
   String descripcion;
-  final List<String> tags;
+  bool completed;
 
   Schedule({
     required this.id,
-    required this.url,
     required this.fecha,
     required this.titulo,
     required this.descripcion,
-    required this.tags,
+    required this.completed,
   });
 }
