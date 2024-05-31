@@ -2,6 +2,7 @@ class Grade {
   int? id;
   final int courseId;
   final double grade;
+  final double percentage;
   final String name;
 
   Grade({
@@ -9,6 +10,7 @@ class Grade {
     required this.courseId,
     required this.grade,
     required this.name,
+    required this.percentage,
   });
 
   Map<String, dynamic> toJson() {
@@ -17,6 +19,7 @@ class Grade {
       'courseId': courseId,
       'grade': grade,
       'name': name,
+      'percentage': percentage,
     };
   }
 
@@ -26,6 +29,7 @@ class Grade {
       courseId: json['courseId'],
       grade: json['grade'],
       name: json['name'],
+      percentage: json['percentage'],
     );
   }
 }

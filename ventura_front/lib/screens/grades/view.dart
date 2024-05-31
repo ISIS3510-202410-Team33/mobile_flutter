@@ -18,6 +18,7 @@ class GradesViewState extends State<GradesView> implements EventObserver {
 
   final GradesViewModel gradesViewModel = GradesViewModel();
   final CoursesViewModel coursesViewModel = CoursesViewModel();
+  bool initialized = false;
   
   List<Course> filteredCourses = [];
   TextEditingController searchController = TextEditingController();
@@ -29,22 +30,32 @@ class GradesViewState extends State<GradesView> implements EventObserver {
     searchController.addListener(_filterCourses);
   }
 
-  void initCourses() {
-    //final List<Course> courses = [
-    //Course(id: 1, name: 'Mathematics', professor: 'John Doe', schedule: 'Mon 9:00 AM - 11:00 AM', room: "Sala 1"),
-    //Course(id: 2, name: 'Science', professor: 'Jane Smith', schedule: 'Tue 10:00 AM - 12:00 PM', room: "Sala 1"),
-    //Course(id: 3, name: 'History', professor: 'Jim Brown', schedule: 'Wed 1:00 PM - 3:00 PM', room: "Sala 1"),
-    //Course(id: 4, name: 'Art', professor: 'Sue Green', schedule: 'Thu 2:00 PM - 4:00 PM', room: "Sala 1"),
-    //Course(id: 5, name: 'Physical Education', professor: 'Tom White', schedule: 'Fri 8:00 AM - 10:00 AM', room: "Sala 1"),
-    //];
-    //for (Course course in courses) {
-    //coursesViewModel.addCourse(course);
-    //}
+  void initTestCourses() {
+     final List<Course> courses = [
+    Course(id: 1, name: 'Mathematics', professor: 'John Doe', schedule: 'Mon 9:00 AM - 11:00 AM', room: "Sala 1"),
+    Course(id: 2, name: 'Science', professor: 'Jane Smith', schedule: 'Tue 10:00 AM - 12:00 PM', room: "Sala 1"),
+    Course(id: 3, name: 'History', professor: 'Jim Brown', schedule: 'Wed 1:00 PM - 3:00 PM', room: "Sala 1"),
+    Course(id: 4, name: 'Art', professor: 'Sue Green', schedule: 'Thu 2:00 PM - 4:00 PM', room: "Sala 1"),
+    Course(id: 5, name: 'Physical Education', professor: 'Tom White', schedule: 'Fri 8:00 AM - 10:00 AM', room: "Sala 1"),
+    ];
+    for (Course course in courses) {
+      coursesViewModel.addCourse(course);
+    }
+    setState(() {
+      initialized = true;
+    });
+    initCourses();
+  }
 
+  void initCourses() {
+   
     coursesViewModel.getCourses((courses) {
       setState(() {
         this.courses = courses;
         filteredCourses = courses;
+        if (courses.isEmpty){
+          initialized = false;
+        }
       });
       initGrades();
     });
@@ -82,12 +93,27 @@ class GradesViewState extends State<GradesView> implements EventObserver {
     });
   }
 
+  Color getGradeColor(double grade) {
+    if (grade >= 4) {
+      return const Color(0xFFC3FF93);
+    } 
+    else if (grade >= 3) {
+      return const Color(0xFFFFBF00);
+    }
+    else {
+      return const Color(0xFFEE4E4E);
+    }
+  }
+
+
+
   void _addGrade(int courseId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         final nameController = TextEditingController();
         final gradeController = TextEditingController();
+        final percentageController = TextEditingController();
 
         return AlertDialog(
           title: const Text('Add Grade'),
@@ -98,10 +124,16 @@ class GradesViewState extends State<GradesView> implements EventObserver {
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
                 keyboardType: TextInputType.text,
+                maxLength: 15,
               ),
               TextField(
                 controller: gradeController,
-                decoration: const InputDecoration(labelText: 'Grade'),
+                decoration: const InputDecoration(labelText: 'Grade (0 - 5 scale)'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: percentageController,
+                decoration: const InputDecoration(labelText: 'Percentage (0 - 100 %)'),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -116,21 +148,129 @@ class GradesViewState extends State<GradesView> implements EventObserver {
             TextButton(
               child: const Text('Add'),
               onPressed: () {
-                setState(() {
-                  final courseIndex = courses.indexWhere((course) => course.id == courseId);
-                  final course = courses[courseIndex];
-                  final newGrade = Grade(
-                    courseId: courseId,
-                    grade: double.parse(gradeController.text),
-                    name: nameController.text,
-                  );
-                  gradesViewModel.addGrade(newGrade);
 
-                  final updatedGrades = List<Grade>.from(course.grades)..add(newGrade);
-                  courses[courseIndex] = course.copyWith(grades: updatedGrades);
-                  filteredCourses = List.from(courses);
-                });
-                Navigator.of(context).pop();
+                final courseIndex = courses.indexWhere((course) => course.id == courseId);
+                final course = courses[courseIndex];
+
+                try {
+                  double pGrade = double.parse(gradeController.text);
+                  double pPercentage = double.parse(percentageController.text);
+                  double reestantPercentage  = 100 - course.grades.fold(0, (previousValue, element) => previousValue + element.percentage);
+
+                  if (pPercentage < 0 || pPercentage > 100) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('The percentage must be between 0 and 100'),
+                          actions: [
+                            TextButton(
+                              child: const Text('Ok'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                  else if (pPercentage > reestantPercentage) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: Text('The percentage is greater than the remaining percentage ($reestantPercentage %) to pass the course'),
+                          actions: [
+                            TextButton(
+                              child: const Text('Ok'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                  else if (pGrade < 0 || pGrade > 5) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('The grade must be between 0 and 5'),
+                          actions: [
+                            TextButton(
+                              child: const Text('Ok'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+
+                  else if (nameController.text.isEmpty || gradeController.text.isEmpty || percentageController.text.isEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('All fields are required'),
+                          actions: [
+                            TextButton(
+                              child: const Text('Ok'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+
+                  else {   
+                    setState(() {
+                      final newGrade = Grade(
+                        courseId: courseId,
+                        grade: double.parse(gradeController.text),
+                        name: nameController.text,
+                        percentage: pPercentage
+                      );
+                      gradesViewModel.addGrade(newGrade);
+
+                      final updatedGrades = List<Grade>.from(course.grades)..add(newGrade);
+                      courses[courseIndex] = course.copyWith(grades: updatedGrades);
+                      filteredCourses = List.from(courses);
+                    });
+                    Navigator.of(context).pop();
+                  }
+                } catch (e) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Error'),
+                        content: const Text('The grade and percentage must be filled in and must be numbers.'),
+                        actions: [
+                          TextButton(
+                            child: const Text('Ok'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } 
+                
               },
             ),
           ],
@@ -147,7 +287,19 @@ class GradesViewState extends State<GradesView> implements EventObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (!initialized) {
+              initTestCourses();
+
+            }
+          }, // Cambia el icono según tu preferencia
+          backgroundColor: const Color(0xFFBBE2EC),
+          child: const Icon(Icons.add_chart_sharp), // Cambia el color de fondo según tu preferencia
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, 
       body: Container(
+        
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF16171B), Color(0xFF353A40)],
@@ -157,6 +309,8 @@ class GradesViewState extends State<GradesView> implements EventObserver {
         ),
         child: SafeArea(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               AppBar(
                 leading: IconButton(
@@ -205,7 +359,39 @@ class GradesViewState extends State<GradesView> implements EventObserver {
                   style: const TextStyle(color: Colors.white), // Cambié el color del texto a negro para mejor visibilidad
                 )
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 30),
+              courses.isEmpty ? const SizedBox() : 
+                FutureBuilder<double>(
+                  future: gradesViewModel.getAverage(),
+                  builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.align_vertical_bottom_rounded, color: Colors.white,),
+                          const SizedBox(width: 10,),
+                          const Text(
+                            'Current semester average:',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16
+                              ),
+                          ),
+                          const SizedBox(width: 10,),
+                          Text(
+                            '${snapshot.data}',
+                            style: TextStyle(
+                              color: getGradeColor(snapshot.data!),
+                              ),
+                          )
+                      ],);  
+                    } else {
+                      return const SizedBox();
+                    }
+                  },
+                ),
+              const SizedBox(height: 20),
+
               courses.isEmpty
                 ? const Column (
                     children: [
@@ -306,10 +492,26 @@ class GradesViewState extends State<GradesView> implements EventObserver {
                                         return ListTile(
                                           leading: const Icon(Icons.arrow_forward_ios_outlined, color: Colors.white, size: 15,),
                                           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                                          title: Text(
-                                            '${grade.name}: ${grade.grade}',
-                                            style: const TextStyle(color: Colors.white),
-                                          ),
+                                          title: Padding(
+                                            padding: const EdgeInsets.only(left: 10, right: 10),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  grade.name,
+                                                  style:  const TextStyle(color: Colors.white),
+                                                ),
+                                                Text(
+                                                  '${grade.grade} / 5',
+                                                  style:  TextStyle(color: getGradeColor(grade.grade)),
+                                                ),
+                                                Text(
+                                                  '${grade.percentage} %',
+                                                  style:  const TextStyle(color: Color(0xFFBBE2EC)),
+                                                ),
+                                              ],
+                                              )
+                                            )
                                         
                                           
                                         );
@@ -320,6 +522,90 @@ class GradesViewState extends State<GradesView> implements EventObserver {
                               )
                             
                           ),
+                          const SizedBox(height: 15),
+                          filteredCourses[index].grades.isEmpty ? const SizedBox() :
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF31363F), // Color de fondo personalizado
+                              borderRadius: BorderRadius.circular(20), // Borde redondeado
+                            ),
+                            child:  Padding(
+                              padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
+                              child:  
+                              
+                              Column(children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  
+                                  children: [
+                                    FutureBuilder(
+                                      future: gradesViewModel.getGradeToPassCourse(filteredCourses[index].id!), builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.done) {
+
+                                          if (snapshot.data!.isInfinite || snapshot.data == 0 ) {
+                                            return const Text(
+                                              'You have finished the course',
+
+                                              style: TextStyle(color: Colors.white),
+                                            );
+                                          } 
+                                          else if (snapshot.data == -1) {
+                                            return const Text(
+                                              'You already passed the course',
+
+                                              style: TextStyle(color: Color(0xFFC3FF93)),
+                                            );
+                                          }
+                                          
+                                          else {
+                                            return Text(
+                                              'You need ${snapshot.data} ',
+                                              style: const TextStyle(color: Colors.white),
+                                            );
+                                          }
+                                        } else {
+                                          return const SizedBox();
+                                        }
+                                      }),
+                                      
+                                  ],    
+                                ),
+                                FutureBuilder(
+                                      future: gradesViewModel.getFinalGradeByCourseId(filteredCourses[index].id!), builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.done) {
+
+                                          if (snapshot.data!.isInfinite || snapshot.data == 0 ) {
+                                            return const SizedBox();
+                                          } else {
+                                            return Text(
+                                              'Your final grade is ${snapshot.data}',
+                                              style: TextStyle(color: getGradeColor(snapshot.data!)),
+                                            );
+                                          }
+                                        } else {
+                                          return const SizedBox();
+                                        }
+                                      }),
+                                FutureBuilder(
+                                      future: gradesViewModel.getReestantPercentageByCourseId(filteredCourses[index].id!), builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.done) {
+                                        
+                                          if (snapshot.data == 0) {
+                                            return const SizedBox();
+                                          } else {
+                                            return Text(
+                                              'in the ${snapshot.data}% to pass the course',
+                                              style: const TextStyle(color: Colors.white),
+                                            );
+                                          }
+                                        } else {
+                                          return const SizedBox();
+                                        }
+                                      }),
+                              ],)
+                              ) 
+                            ),
                           const SizedBox(height: 15),
                           
 

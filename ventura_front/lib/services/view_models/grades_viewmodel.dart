@@ -36,6 +36,39 @@ class GradesViewModel extends EventViewModel {
       callback(grades);
     });
   }
+
+  Future<double> getAverage() async {
+    double average = await _repository.getAverage();
+    notify(GradeEvent(eventType: 'average', ));
+    return average;
+  }
+
+  void getGradeById(int gradeId, void Function(Grade) callback) {
+    _repository.getGrades().then((grades) {
+      Grade grade = grades.firstWhere((element) => element.id == gradeId);
+      callback(grade);
+    });
+  }
+
+  Future<double> getReestantPercentageByCourseId (int courseId) async  {
+    double per = await _repository.getReestantPercentageByCourseId(courseId);
+    notify(GradeEvent(eventType: 'reestant percentage', ));
+    return per;
+  }
+
+  Future<double> getGradeToPassCourse(int courseId) async {
+    double per = await _repository.getGradeToPassCourse(courseId);
+    notify(GradeEvent(eventType: 'remaining percentage', ));
+    return per;
+  }
+
+  Future<double> getFinalGradeByCourseId(int courseId) async {
+    double finalGrade = await _repository.getFinalGradeByCourseId(courseId);
+    notify(GradeEvent(eventType: 'final grade', ));
+    return finalGrade;
+  }
+
+
 }
 
 class GradeEvent extends ViewEvent {
