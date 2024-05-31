@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/screens/courses/view.dart';
 import 'package:ventura_front/screens/home/view.dart';
 import 'package:ventura_front/screens/map/view.dart';
 import 'package:ventura_front/screens/profile/view.dart';
@@ -45,7 +46,12 @@ class MyButton extends StatelessWidget {
                     builder: (context) => ProfileView(
                         homeViewContentState: homeViewContentState)));
             homeViewContentState.madeConnection();
-          } else if (title == "Grades") {
+          } else if (title == "Courses") {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const CoursesView()));
+            homeViewContentState.madeConnection();
+          }
+          else if (title == "Grades") {
             await Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const GradesView()));
             homeViewContentState.madeConnection();
