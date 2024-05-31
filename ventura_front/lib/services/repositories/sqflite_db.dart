@@ -40,6 +40,7 @@ class LocalDB {
         id INTEGER PRIMARY KEY,
         courseId INTEGER,
         grade REAL,
+        percentage REAL,
         name TEXT,
         FOREIGN KEY (courseId) REFERENCES courses (id) ON DELETE NO ACTION ON UPDATE NO ACTION
       )
