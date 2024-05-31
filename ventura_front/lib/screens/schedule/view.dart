@@ -1,56 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:ventura_front/screens/schedule/task_calendar.dart';
 
 class ScheduleView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Schedule'),
-      ),
       body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF16171B), Color(0xFF353A40)],
+            begin: Alignment.bottomRight,
+            end: Alignment.topLeft,
+          ),
+        ),
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Select a Month',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                color: Colors.white,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              title: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Schedule',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              centerTitle: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
             ),
             SizedBox(height: 20),
-            // Placeholder for month selection
-            _buildMonthSelection(),
-            SizedBox(height: 20),
             Text(
-              'Calendar View',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              'Here you can organize your projects and tasks!',
+              style: TextStyle(fontSize: 20, color: Colors.white),
             ),
             SizedBox(height: 20),
-            // Placeholder for calendar view
-            Expanded(child: _buildCalendar()),
+            Expanded(child: TaskCalendarPage()),
+            SizedBox(height: 50)
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildMonthSelection() {
-    // Placeholder for month selection widget
-    return Container(
-      height: 50,
-      width: double.infinity,
-      color: Colors.grey[300],
-      child: Center(
-        child: Text('Month Selection Placeholder'),
-      ),
-    );
-  }
-
-  Widget _buildCalendar() {
-    // Placeholder for calendar widget
-    return Container(
-      color: Colors.grey[200],
-      child: Center(
-        child: Text('Calendar Placeholder'),
       ),
     );
   }

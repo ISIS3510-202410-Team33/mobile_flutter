@@ -34,8 +34,6 @@ class MyButton extends StatelessWidget {
                           homeViewContentState: homeViewContentState,
                         )));
             homeViewContentState.madeConnection();
-          } else if (title == "Schedule") {
-            print("Schedule");
           } else if (title == "Settings") {
             await Navigator.push(context,
                 MaterialPageRoute(builder: (context) => SettingsView()));
