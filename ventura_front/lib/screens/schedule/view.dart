@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:ventura_front/screens/schedule/task_calendar.dart';
 
 class ScheduleView extends StatelessWidget {

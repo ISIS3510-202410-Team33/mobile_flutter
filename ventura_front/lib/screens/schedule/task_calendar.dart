@@ -2,38 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
-
-class Schedule {
-  final int id;
-  final String titulo;
-  String descripcion;
-  bool completed;
-
-  Schedule({
-    required this.id,
-    required this.titulo,
-    required this.descripcion,
-    required this.completed,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'titulo': titulo,
-      'descripcion': descripcion,
-      'completed': completed,
-    };
-  }
-
-  factory Schedule.fromJson(Map<String, dynamic> json) {
-    return Schedule(
-      id: json['id'],
-      titulo: json['titulo'],
-      descripcion: json['descripcion'],
-      completed: json['completed'],
-    );
-  }
-}
+import 'package:ventura_front/services/models/schedule_model.dart';
 
 class TaskCalendarPage extends StatefulWidget {
   @override
@@ -92,6 +61,7 @@ class _TaskCalendarPageState extends State<TaskCalendarPage> {
           TableCalendar(
             firstDay: DateTime.utc(2021, 1, 1),
             lastDay: DateTime.utc(2025, 12, 31),
+            headerVisible: false,
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
@@ -139,7 +109,7 @@ class _TaskCalendarPageState extends State<TaskCalendarPage> {
               child: Column(children: [
                 SizedBox(height: 20),
                 Text(
-                  'Tasks for the date',
+                  'Tasks for the selected date',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 SizedBox(height: 20),
@@ -151,6 +121,10 @@ class _TaskCalendarPageState extends State<TaskCalendarPage> {
                               child: CheckboxListTile(
                                 title: Text(
                                   task.titulo,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  task.descripcion,
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 value: task.completed,
